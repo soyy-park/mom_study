@@ -1,0 +1,12 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# 비밀 값
+.env
+
+# 생성물 (원본/중간 산출물)
+capture/
+ocr_text/
+ocr_json/
