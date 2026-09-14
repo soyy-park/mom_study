@@ -22,6 +22,8 @@ import json
 import os
 import sys
 
+from quiz_parser import parse_questions
+
 CAPTURE_DIR = "capture"
 TEXT_DIR = "ocr_text"
 JSON_DIR = "ocr_json"
@@ -261,6 +263,7 @@ def process_image(image_path, backend, text_dir, json_dir):
         "ocr_at": datetime.datetime.now().isoformat(timespec="seconds"),
         "full_text": ocr["full_text"],
         "paragraphs": ocr["paragraphs"],
+        "questions": parse_questions(ocr["paragraphs"]),
     }
     with open(json_path, "w", encoding="utf-8") as fh:
         json.dump(record, fh, ensure_ascii=False, indent=2)
@@ -303,7 +306,8 @@ def run_pipeline(input_dir=CAPTURE_DIR, text_dir=TEXT_DIR, json_dir=JSON_DIR,
         processed += 1
         chars = len(record["full_text"])
         paras = len(record["paragraphs"])
-        log(f"[ocr] ok     {name}  과목={record['subject']}  {chars}자  문단{paras}개")
+        qs = len(record["questions"])
+        log(f"[ocr] ok     {name}  과목={record['subject']}  {chars}자  문단{paras}개  문제{qs}개")
 
     log(f"[ocr] 완료: 처리 {processed} / 건너뜀 {skipped} / 실패 {failed}")
     return {"processed": processed, "skipped": skipped, "failed": failed}
@@ -342,7 +346,7 @@ def selftest():
     from PIL import Image, ImageDraw, ImageFont
 
     expected_lines = [
-        "다음 중 옳은 것은?",
+        "1. 다음 중 옳은 것은?",
         "1) 보기 하나",
         "2) 보기 둘",
         "3) 보기 셋",
@@ -381,15 +385,22 @@ def selftest():
         with open(json_path, encoding="utf-8") as fh:
             record = json.load(fh)
 
-    required = ["source_image", "subject", "captured_at", "ocr_backend", "full_text", "paragraphs"]
+    required = ["source_image", "subject", "captured_at", "ocr_backend", "full_text",
+                "paragraphs", "questions"]
     keys_ok = all(k in record for k in required)
     subject_ok = record.get("subject") == "수학"
     date_ok = record.get("captured_at") == "2026-09-10T12:52:26"
     text_ok = "옳은 것은" in record.get("full_text", "")
+    questions = record.get("questions", [])
+    questions_ok = (
+        len(questions) == 1
+        and questions[0]["question"] == "다음 중 옳은 것은?"
+        and questions[0]["choices"] == ["보기 하나", "보기 둘", "보기 셋"]
+    )
     print(f"[4] JSON 스키마    : keys_ok={keys_ok}  subject_ok={subject_ok}  "
-          f"captured_at_ok={date_ok}  text_ok={text_ok}")
+          f"captured_at_ok={date_ok}  text_ok={text_ok}  questions_ok={questions_ok}")
     print(f"    subject={record.get('subject')!r}  captured_at={record.get('captured_at')!r}  "
-          f"paragraphs={len(record.get('paragraphs', []))}개")
+          f"paragraphs={len(record.get('paragraphs', []))}개  questions={questions!r}")
 
     # 재실행 시 skip 되는지
     summary2 = run_pipeline(
@@ -401,7 +412,7 @@ def selftest():
 
     all_ok = all([
         summary["processed"] == 1, summary["failed"] == 0,
-        txt_ok, json_ok, keys_ok, subject_ok, date_ok, text_ok, skip_ok,
+        txt_ok, json_ok, keys_ok, subject_ok, date_ok, text_ok, questions_ok, skip_ok,
     ])
     # 정리
     import shutil
