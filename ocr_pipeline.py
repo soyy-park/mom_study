@@ -143,21 +143,75 @@ class GoogleVisionBackend:
         if not annotation:
             return {"full_text": "", "paragraphs": []}
 
-        full_text = annotation.get("text", "")
+        image = None
+        try:
+            from PIL import Image
+
+            image = Image.open(image_path).convert("RGB")
+        except Exception:  # noqa: BLE001 - 색상 판별은 부가 기능, 실패해도 OCR 자체는 계속
+            image = None
+
         paragraphs = []
         for page in annotation.get("pages", []):
             for block in page.get("blocks", []):
                 for para in block.get("paragraphs", []):
-                    words = []
-                    for word in para.get("words", []):
-                        words.append(
-                            "".join(s.get("text", "") for s in word.get("symbols", []))
-                        )
-                    para_text = " ".join(w for w in words if w)
-                    paragraphs.append(
-                        {"text": para_text, "bbox": _poly_to_bbox(para.get("boundingBox"))}
-                    )
+                    words = para.get("words", [])
+                    para_text = _build_paragraph_text(words)
+                    marker_bbox = _poly_to_bbox(words[0]["boundingBox"]) if words else None
+                    is_answer = bool(image and marker_bbox and _is_blue_marker(image, marker_bbox))
+                    if is_answer:
+                        para_text = "[정답] " + para_text
+                    paragraphs.append({
+                        "text": para_text,
+                        "bbox": _poly_to_bbox(para.get("boundingBox")),
+                        "is_answer": is_answer,
+                    })
+
+        # Vision 이 준 원문(full_text) 대신 문단을 우리가 다시 이어붙인다 —
+        # 정답으로 판별된 보기 앞에 "[정답] " 표시를 그대로 살리기 위함.
+        full_text = "\n".join(p["text"] for p in paragraphs)
         return {"full_text": full_text, "paragraphs": paragraphs}
+
+
+def _build_paragraph_text(words):
+    """단어들을 Vision 이 알려주는 실제 띄어쓰기/줄바꿈(detectedBreak)대로 이어붙인다.
+
+    무조건 " "로 join 하면 한글 단어 사이에 원문에 없는 공백이 낀다.
+    """
+    parts = []
+    for word in words:
+        symbols = word.get("symbols", [])
+        parts.append("".join(s.get("text", "") for s in symbols))
+        break_type = None
+        if symbols:
+            break_type = symbols[-1].get("property", {}).get("detectedBreak", {}).get("type")
+        if break_type in ("SPACE", "SURE_SPACE"):
+            parts.append(" ")
+        elif break_type in ("LINE_BREAK", "EOL_SURE_SPACE"):
+            parts.append("\n")
+    return "".join(parts).strip()
+
+
+# 정답 보기는 파란 원(예: 채워진 파란 동그라미 안에 흰 숫자)으로 표시된다.
+# 그 부분만 크게 잘라 평균 RGB 를 보면, 파란 원은 B(파랑) 채널이 R/G 보다
+# 뚜렷하게 높고, 검은 테두리 원(흰 배경)은 R≈G≈B(무채색)이다.
+BLUE_MARKER_MIN_DIFF = 15
+
+
+def _is_blue_marker(image, bbox):
+    x0, y0, x1, y1 = bbox
+    if x1 <= x0 or y1 <= y0:
+        return False
+    crop = image.crop((x0, y0, x1, y1))
+    pixels = crop.tobytes()
+    if not pixels:
+        return False
+    pixels = [pixels[i:i + 3] for i in range(0, len(pixels), 3)]
+    n = len(pixels)
+    avg_r = sum(p[0] for p in pixels) / n
+    avg_g = sum(p[1] for p in pixels) / n
+    avg_b = sum(p[2] for p in pixels) / n
+    return (avg_b - avg_r) > BLUE_MARKER_MIN_DIFF and (avg_b - avg_g) > BLUE_MARKER_MIN_DIFF / 2
 
 
 def _poly_to_bbox(poly):
