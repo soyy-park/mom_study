@@ -3,7 +3,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // 읽기는 공개(폰 앱에서 로그인 없이 조회), 쓰기는 서버(Admin SDK)만 허용.
     // Admin SDK 는 이 규칙을 우회하므로 sync_pipeline.py 의 쓰기는 영향받지 않음.
-    match /captures/{docId} {
+    match /questions/{docId} {
       allow read: if true;
       allow write: if false;
     }

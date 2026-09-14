@@ -1,8 +1,14 @@
 """OCR 결과 -> Firestore 동기화 (4단계)
 
-ocr_json/ 의 레코드를 Firestore `captures` 컬렉션에 올려서, PC 가 꺼져 있어도
-휴대폰 PWA 에서 언제든 조회할 수 있게 한다. paragraphs(bbox)는 뷰어에 불필요해
-동기화하지 않는다.
+ocr_json/ 의 레코드(캡처 한 장, 문제 여러 개 포함 가능)를 문제 단위로 풀어서
+Firestore `questions` 컬렉션에 올린다. 캡처 화면 좌표(paragraphs/bbox)나 원본
+텍스트 통짜(full_text)는 뷰어에 불필요해 동기화하지 않고, 과목/문제/보기/
+정답번호 같은 필요한 필드만 보낸다.
+
+문서 ID는 "{캡처파일명}_q{순번}" (예: 수학_20260910_090000_q1). 캡처 하나를
+--force 로 다시 동기화했을 때 문제 개수가 줄면, 이전에 올라간 초과분 문서가
+Firestore 에 남을 수 있다(자동 정리는 하지 않음 - 드물게 재동기화하는
+개인용 규모라 지금은 콘솔에서 수동 삭제로 충분하다고 판단).
 
 인증: Firebase 서비스 계정 키. 이 폴더는 Google Drive 동기화 폴더라 .gitignore
 에 넣어도 파일 자체가 Drive 에는 올라가므로, 키 파일은 Drive 밖(.env 의
@@ -24,7 +30,7 @@ import sys
 
 JSON_DIR = "ocr_json"
 STATE_PATH = "sync_state.json"
-COLLECTION = "captures"
+COLLECTION = "questions"
 
 
 # --------------------------------------------------------------------------- #
@@ -70,28 +76,41 @@ def get_firestore_client(env=None):
 
 
 # --------------------------------------------------------------------------- #
-# 레코드 -> Firestore 문서 매핑
+# 레코드 -> Firestore 문서 매핑 (캡처 1개 -> 문제 N개 문서)
 # --------------------------------------------------------------------------- #
-def record_to_doc(record):
-    captured_at = record.get("captured_at")
-    captured_dt = None
-    if captured_at:
-        try:
-            # 파일명의 시각은 PC 로컬 시간. 시간대 없이 올리면 Firestore 가 UTC 로 해석해
-            # 폰에서 9시간 어긋나므로 로컬 시간대를 붙인다.
-            captured_dt = datetime.datetime.fromisoformat(captured_at).astimezone()
-        except ValueError:
-            captured_dt = None
+def _parse_captured_at(captured_at):
+    if not captured_at:
+        return None
+    try:
+        # 파일명의 시각은 PC 로컬 시간. 시간대 없이 올리면 Firestore 가 UTC 로 해석해
+        # 폰에서 9시간 어긋나므로 로컬 시간대를 붙인다.
+        return datetime.datetime.fromisoformat(captured_at).astimezone()
+    except ValueError:
+        return None
 
-    return {
-        "subject": record.get("subject") or "무제",
-        "captured_at": captured_dt,
-        "full_text": record.get("full_text", ""),
-        "source_image": record.get("source_image", ""),
-        "ocr_backend": record.get("ocr_backend", ""),
-        "ocr_at": record.get("ocr_at"),
-        "synced_at": datetime.datetime.now(datetime.timezone.utc),
-    }
+
+def record_to_docs(stem, record):
+    """레코드(캡처 1장) -> [(문서ID, 문서데이터), ...]. 문제가 하나도 파싱 안 됐으면 빈 리스트."""
+    subject = record.get("subject") or "무제"
+    captured_dt = _parse_captured_at(record.get("captured_at"))
+    synced_at = datetime.datetime.now(datetime.timezone.utc)
+    source_image = record.get("source_image", "")
+    ocr_backend = record.get("ocr_backend", "")
+
+    docs = []
+    for i, q in enumerate(record.get("questions") or [], start=1):
+        doc = {
+            "subject": subject,
+            "question": q.get("question", ""),
+            "choices": q.get("choices", []),
+            "answer_index": q.get("answer_index"),
+            "captured_at": captured_dt,
+            "source_image": source_image,
+            "ocr_backend": ocr_backend,
+            "synced_at": synced_at,
+        }
+        docs.append((f"{stem}_q{i}", doc))
+    return docs
 
 
 # --------------------------------------------------------------------------- #
@@ -136,18 +155,34 @@ def run_sync(json_dir=JSON_DIR, client=None, state_path=STATE_PATH,
 
         with open(path, encoding="utf-8") as fh:
             record = json.load(fh)
-        doc = record_to_doc(record)
+        docs = record_to_docs(stem, record)
+
+        if not docs:
+            # 업로드할 문제가 없을 뿐 처리 자체는 끝났으므로 synced 로 세고, 다음
+            # 실행에서 이 캡처를 또 시도하지 않도록 state 에 기록한다.
+            log(f"[sync] skip    {stem}  (파싱된 문제 없음)")
+            state[stem] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            synced += 1
+            continue
 
         if dry_run:
-            log(f"[sync] dry-run {stem}  subject={doc['subject']}  chars={len(doc['full_text'])}")
+            for doc_id, doc in docs:
+                log(f"[sync] dry-run {doc_id}  subject={doc['subject']}  "
+                    f"question={doc['question']!r}  보기{len(doc['choices'])}개  "
+                    f"정답={doc['answer_index']}")
         else:
-            try:
-                client.collection(COLLECTION).document(stem).set(doc)
-            except Exception as exc:  # noqa: BLE001 - 네트워크/권한 오류는 건너뛰고 계속
-                failed += 1
-                log(f"[sync] FAIL    {stem}  -> {exc!r}")
+            ok = True
+            for doc_id, doc in docs:
+                try:
+                    client.collection(COLLECTION).document(doc_id).set(doc)
+                except Exception as exc:  # noqa: BLE001 - 네트워크/권한 오류는 건너뛰고 계속
+                    failed += 1
+                    ok = False
+                    log(f"[sync] FAIL    {doc_id}  -> {exc!r}")
+                    continue
+                log(f"[sync] ok      {doc_id}  subject={doc['subject']}")
+            if not ok:
                 continue
-            log(f"[sync] ok      {stem}  subject={doc['subject']}")
 
         state[stem] = datetime.datetime.now(datetime.timezone.utc).isoformat()
         synced += 1
@@ -203,41 +238,65 @@ def selftest():
     os.makedirs(jdir)
     state_path = os.path.join(tmp, "sync_state.json")
 
+    # (파일명, 과목, 캡처시각, 문제 리스트) - 실제 구조는 ocr_pipeline.py 의
+    # questions 필드와 동일. 캡처 한 장에 문제가 여러 개 있는 경우(영어)와
+    # 파싱이 하나도 안 된 경우(국어)를 함께 검증한다.
     fixtures = [
-        ("수학_20260910_090000.json", "수학", "2026-09-10T09:00:00", "다음 중 옳은 것은?"),
-        ("영어_20260911_070000.json", "영어", "2026-09-11T07:00:00", "빈칸에 알맞은 단어는?"),
+        ("수학_20260910_090000.json", "수학", "2026-09-10T09:00:00", [
+            {"question": "다음 중 옳은 것은?", "choices": ["1번", "2번", "3번"], "answer_index": 2},
+        ]),
+        ("영어_20260911_070000.json", "영어", "2026-09-11T07:00:00", [
+            {"question": "빈칸에 알맞은 단어는?", "choices": ["apple", "banana"], "answer_index": 1},
+            {"question": "다음 문장을 해석하면?", "choices": ["A", "B", "C"], "answer_index": None},
+        ]),
+        ("국어_20260912_080000.json", "국어", "2026-09-12T08:00:00", []),
     ]
-    for name, subject, captured_at, text in fixtures:
+    expected_docs = sum(len(qs) for *_, qs in fixtures)  # 3
+
+    for name, subject, captured_at, questions in fixtures:
         record = {
             "source_image": name.replace(".json", ".png"),
             "subject": subject,
             "captured_at": captured_at,
             "ocr_backend": "stub",
             "ocr_at": captured_at,
-            "full_text": text,
-            "paragraphs": [{"text": text, "bbox": [0, 0, 10, 10]}],
+            "full_text": "(생략)",
+            "paragraphs": [],
+            "questions": questions,
         }
         with open(os.path.join(jdir, name), "w", encoding="utf-8") as fh:
             json.dump(record, fh, ensure_ascii=False)
 
-    print(f"[1] 임시 입력      : {jdir}  (레코드 {len(fixtures)}개)")
+    print(f"[1] 임시 입력      : {jdir}  (캡처 {len(fixtures)}개, 문제 {expected_docs}개)")
 
     client = FakeFirestoreClient()
     summary = run_sync(json_dir=jdir, client=client, state_path=state_path,
                         log=lambda m: print("    " + m))
     print(f"[2] 1차 동기화 요약: {summary}")
 
-    doc_count_ok = len(client.docs) == len(fixtures)
+    doc_count_ok = len(client.docs) == expected_docs
     subjects_ok = {doc["subject"] for doc in client.docs.values()} == {"수학", "영어"}
-    no_paragraphs = all("paragraphs" not in doc for doc in client.docs.values())
+    fields_ok = all(
+        set(doc) == {"subject", "question", "choices", "answer_index",
+                      "captured_at", "source_image", "ocr_backend", "synced_at"}
+        for doc in client.docs.values()
+    )
     types_ok = all(
         isinstance(doc["captured_at"], datetime.datetime) and doc["captured_at"].tzinfo is not None
         for doc in client.docs.values()
     )
+    q1 = client.docs.get((COLLECTION, "영어_20260911_070000_q1"))
+    q2 = client.docs.get((COLLECTION, "영어_20260911_070000_q2"))
+    multi_question_ok = (
+        q1 is not None and q1["choices"] == ["apple", "banana"] and q1["answer_index"] == 1
+        and q2 is not None and q2["answer_index"] is None
+    )
+    no_questions_case_ok = (COLLECTION, "국어_20260912_080000_q1") not in client.docs
     print(f"[3] 문서 검증      : count_ok={doc_count_ok}  subjects_ok={subjects_ok}  "
-          f"no_paragraphs={no_paragraphs}  captured_at_is_aware_datetime={types_ok}")
+          f"fields_ok={fields_ok}  captured_at_is_aware_datetime={types_ok}  "
+          f"multi_question_ok={multi_question_ok}  no_questions_case_ok={no_questions_case_ok}")
 
-    # 재실행 시 skip
+    # 재실행 시 skip (국어 캡처도 "문제 없음"으로 처리 완료된 상태라 다시 안 건드림)
     summary2 = run_sync(json_dir=jdir, client=client, state_path=state_path, log=lambda m: None)
     skip_ok = summary2["skipped"] == len(fixtures) and summary2["synced"] == 0
     print(f"[4] 재실행 skip    : {skip_ok}  ({summary2})")
@@ -248,21 +307,22 @@ def selftest():
     force_ok = summary3["synced"] == len(fixtures)
     print(f"[5] --force 재동기화: {force_ok}  ({summary3})")
 
-    # 전송 실패 시 중단하지 않고 건너뛰는지
+    # 전송 실패 시 중단하지 않고 건너뛰는지 (문제가 있는 캡처만 실패 대상이 됨)
     class FailingClient(FakeFirestoreClient):
         def collection(self, name):
             raise RuntimeError("network down")
 
     summary4 = run_sync(json_dir=jdir, client=FailingClient(), state_path=state_path, force=True,
                          log=lambda m: None)
-    fail_ok = summary4["failed"] == len(fixtures) and summary4["synced"] == 0
+    fail_ok = summary4["failed"] == expected_docs and summary4["synced"] == 1  # 국어(문제 0개)만 성공
     print(f"[6] 실패 건너뛰기  : {fail_ok}  ({summary4})")
 
     shutil.rmtree(tmp, ignore_errors=True)
 
     all_ok = all([
         summary["synced"] == len(fixtures), summary["skipped"] == 0,
-        doc_count_ok, subjects_ok, no_paragraphs, types_ok, skip_ok, force_ok, fail_ok,
+        doc_count_ok, subjects_ok, fields_ok, types_ok, multi_question_ok,
+        no_questions_case_ok, skip_ok, force_ok, fail_ok,
     ])
     print(f"=== result: {'PASS' if all_ok else 'FAIL'} ===")
     return 0 if all_ok else 1
