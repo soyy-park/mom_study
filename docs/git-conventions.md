@@ -94,10 +94,9 @@ git branch -d feat/ocr-parsing              # 로컬 브랜치 정리
 
 ## 5. PR 체크리스트
 
-- [ ] `run.cmd run python capture_app.py --selftest` / `ocr_pipeline.py --selftest` /
-      `export_pdf.py --selftest` / `sync_pipeline.py --selftest` 통과
-- [ ] `.env`, `venv/`, `capture/`, `ocr_text/`, `ocr_json/`, `pdf/`, `sync_state.json`,
-      Firebase 서비스 계정 키 등 미포함 (`git status` 확인)
+- [ ] `run.cmd run python pipeline/<파일>.py --selftest` (capture_app / ocr_pipeline /
+      quiz_parser / export_pdf / sync_pipeline) 통과
+- [ ] `.env`, `venv/`, `data/`, Firebase 서비스 계정 키 등 미포함 (`git status` 확인)
 - [ ] 새 의존성은 `pyproject.toml`에 추가하고 `run.cmd sync` 후 `uv.lock` 같이 커밋
 - [ ] 동작이 바뀌었으면 `README.md` 갱신
 
@@ -124,5 +123,5 @@ git push origin stage-2
 
 - **비밀**: `.env`, API 키, 토큰 — 절대 커밋 금지. 노출되면 즉시 키 폐기·재발급.
 - **가상환경**: `venv/`, `.venv/`.
-- **생성물**: `capture/`, `ocr_text/`, `ocr_json/`, `__pycache__/`.
+- **생성물**: `data/` (캡처·OCR·PDF·동기화 상태), `__pycache__/`.
 - 예시/양식은 올린다: `.env.example`.

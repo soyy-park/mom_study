@@ -10,7 +10,7 @@
 ### 1. 강의 보다가 퀴즈 나오면 캡처
 
 ```cmd
-run.cmd run python capture_app.py
+run.cmd run python pipeline/capture_app.py
 ```
 
 과목명 입력 → **캡처** 버튼 → 문제 영역을 마우스로 드래그해서 선택 → 손 떼면 자동 저장.
@@ -20,7 +20,7 @@ run.cmd run python capture_app.py
 ### 2. 텍스트로 변환 (정답도 자동으로 표시됨)
 
 ```cmd
-run.cmd run python ocr_pipeline.py
+run.cmd run python pipeline/ocr_pipeline.py
 ```
 
 방금 캡처한 이미지들을 읽어서 텍스트로 바꿉니다. 화면에서 정답 보기가 파란 원으로
@@ -31,8 +31,8 @@ run.cmd run python ocr_pipeline.py
 
 | 보고 싶은 방식 | 명령 |
 |---|---|
-| **폰으로 보기** (추천) | `run.cmd run python sync_pipeline.py` 실행 후 폰에서 https://mommy-stduy.web.app 접속 |
-| **PDF로 뽑아서 인쇄/공유** | `run.cmd run python export_pdf.py` → `pdf/quiz_review.pdf` 생성 |
+| **폰으로 보기** (추천) | `run.cmd run python pipeline/sync_pipeline.py` 실행 후 폰에서 https://mommy-stduy.web.app 접속 |
+| **PDF로 뽑아서 인쇄/공유** | `run.cmd run python pipeline/export_pdf.py` → `data/pdf/quiz_review.pdf` 생성 |
 
 폰 웹 주소는 한 번 접속한 뒤 브라우저 메뉴에서 **"홈 화면에 추가"**를 누르면 앱처럼
 아이콘이 생겨서 다음부턴 바로 열립니다. 캡처를 새로 할 때마다 2·3단계만 다시
@@ -41,10 +41,10 @@ run.cmd run python ocr_pipeline.py
 ### 자주 막히는 것
 
 - `run.cmd`가 "인식할 수 없는 명령"이라고 뜬다 → PowerShell에서는 앞에 `.\`를 붙여야
-  합니다: `.\run.cmd run python capture_app.py`. `cmd`(검정 창)에서는 그냥 됩니다.
+  합니다: `.\run.cmd run python pipeline/capture_app.py`. `cmd`(검정 창)에서는 그냥 됩니다.
 - 명령이 프로젝트 폴더가 아닌 곳에서 안 먹힌다 → 먼저 이동:
   `cd "G:\다른 컴퓨터\내 노트북\googledrive\엄마"`
-- 폰 화면에 목록이 안 뜬다 → 2번(OCR) 다음에 `sync_pipeline.py`를 안 돌렸을 가능성이
+- 폰 화면에 목록이 안 뜬다 → 2번(OCR) 다음에 `pipeline/sync_pipeline.py`를 안 돌렸을 가능성이
   높습니다. 캡처만 하고 동기화를 깜빡하면 폰에는 안 보입니다.
 
 ---
@@ -53,11 +53,11 @@ run.cmd run python ocr_pipeline.py
 
 | 단계 | 파일 | 상태 |
 |---|---|---|
-| 1. 화면 캡처 | `capture_app.py` | ✅ |
-| 2. OCR 추출 + 정답 자동 감지 | `ocr_pipeline.py` | ✅ (Google Vision 키 필요) |
-| 3. 구조화 파싱 (문제/보기/정답 분리) | `quiz_parser.py` | ✅ |
-| 4. PDF 내보내기 | `export_pdf.py` | ✅ |
-| 5. 클라우드 동기화 (Firestore) | `sync_pipeline.py` | ✅ (Firebase 서비스 계정 키 필요) |
+| 1. 화면 캡처 | `pipeline/capture_app.py` | ✅ |
+| 2. OCR 추출 + 정답 자동 감지 | `pipeline/ocr_pipeline.py` | ✅ (Google Vision 키 필요) |
+| 3. 구조화 파싱 (문제/보기/정답 분리) | `pipeline/quiz_parser.py` | ✅ |
+| 4. PDF 내보내기 | `pipeline/export_pdf.py` | ✅ |
+| 5. 클라우드 동기화 (Firestore) | `pipeline/sync_pipeline.py` | ✅ (Firebase 서비스 계정 키 필요) |
 | 6. 폰 PWA 로 다시보기 | `webapp/` | ✅ 배포됨 — https://mommy-stduy.web.app |
 
 ## 개발 환경
@@ -67,22 +67,44 @@ run.cmd run python ocr_pipeline.py
 uv 명령을 실행한다. Drive 밖에서 작업한다면 래퍼 없이 `uv` 를 직접 써도 된다.
 
 ```cmd
-run.cmd sync                                    :: 의존성 설치 / 갱신
-run.cmd run python capture_app.py               :: 1단계 캡처 GUI
-run.cmd run python ocr_pipeline.py              :: 2단계 OCR 실행
-run.cmd run python ocr_pipeline.py --selftest   :: GUI/키 없이 동작 검증
-run.cmd run python export_pdf.py                :: 4단계 PDF 내보내기
-run.cmd run python sync_pipeline.py             :: 5단계 Firestore 동기화
+run.cmd sync                                             :: 의존성 설치 / 갱신
+run.cmd run python pipeline/capture_app.py               :: 1단계 캡처 GUI
+run.cmd run python pipeline/ocr_pipeline.py               :: 2단계 OCR 실행 (3단계 구조화 파싱 포함)
+run.cmd run python pipeline/ocr_pipeline.py --selftest   :: GUI/키 없이 동작 검증
+run.cmd run python pipeline/export_pdf.py                :: 4단계 PDF 내보내기
+run.cmd run python pipeline/sync_pipeline.py             :: 5단계 Firestore 동기화
 ```
 
-## 1단계 — 캡처 (`capture_app.py`)
+## 프로젝트 구조
+
+```
+mom_study/
+├── pipeline/          # 1~5단계 파이썬 스크립트
+│   ├── capture_app.py     (1단계 캡처)
+│   ├── ocr_pipeline.py    (2단계 OCR + 정답 감지)
+│   ├── quiz_parser.py     (3단계 구조화 파싱, ocr_pipeline 이 자동 호출)
+│   ├── export_pdf.py      (4단계 PDF 내보내기)
+│   └── sync_pipeline.py   (5단계 Firestore 동기화)
+├── webapp/            # 6단계 폰 PWA (Firebase Hosting 에 배포)
+├── data/              # 실행 시 자동 생성되는 산출물 (git 미포함)
+│   ├── capture/            캡처 원본 PNG
+│   ├── ocr_text/           OCR 원문 txt
+│   ├── ocr_json/           OCR 결과 + 구조화된 문제 json
+│   ├── pdf/                내보낸 PDF
+│   └── sync_state.json     Firestore 동기화 완료 기록
+├── docs/              # git-conventions.md 등 프로젝트 문서
+├── firebase.json, firestore.rules, .firebaserc   # Firebase 배포 설정 (루트 고정 - CLI 관례)
+└── pyproject.toml, uv.lock, run.cmd, run.ps1, .env(.example), README.md
+```
+
+## 1단계 — 캡처 (`pipeline/capture_app.py`)
 
 메인 창에서 과목명을 입력하고 **캡처** 버튼 → 전체화면 반투명 오버레이에서 드래그로
-영역 선택 → 그 영역만 `capture/{과목명}_{YYYYMMDD_HHMMSS}.png` 로 저장. ESC 로 취소.
+영역 선택 → 그 영역만 `data/capture/{과목명}_{YYYYMMDD_HHMMSS}.png` 로 저장. ESC 로 취소.
 
-## 2단계 — OCR + 정답 감지 (`ocr_pipeline.py`)
+## 2단계 — OCR + 정답 감지 (`pipeline/ocr_pipeline.py`)
 
-`capture/` 의 PNG 를 읽어 OCR → `ocr_text/{이름}.txt` (원문) + `ocr_json/{이름}.json`
+`data/capture/` 의 PNG 를 읽어 OCR → `data/ocr_text/{이름}.txt` (원문) + `data/ocr_json/{이름}.json`
 (과목·캡처시각·원문·문단 위치·**구조화된 문제 목록**). OCR 백엔드는 교체 가능:
 
 **정답 자동 감지**: 이 강의 플랫폼은 정답 보기를 파란색 원으로 표시한다. 각 보기
@@ -96,13 +118,13 @@ run.cmd run python sync_pipeline.py             :: 5단계 Firestore 동기화
 - `stub` — API 키 없이 파이프라인 배관을 검증하는 가짜 백엔드.
 
 ```cmd
-run.cmd run python ocr_pipeline.py --backend google
-run.cmd run python ocr_pipeline.py --force        :: 이미 처리한 것도 다시
+run.cmd run python pipeline/ocr_pipeline.py --backend google
+run.cmd run python pipeline/ocr_pipeline.py --force        :: 이미 처리한 것도 다시
 ```
 
-## 3단계 — 구조화 파싱 (`quiz_parser.py`)
+## 3단계 — 구조화 파싱 (`pipeline/quiz_parser.py`)
 
-`ocr_pipeline.py` 가 안에서 자동으로 호출한다(따로 실행할 일 없음). 캡처 한 장에
+`pipeline/ocr_pipeline.py` 가 안에서 자동으로 호출한다(따로 실행할 일 없음). 캡처 한 장에
 문제가 여러 개 들어있어도 문단(`paragraphs`)을 정규식 규칙으로 문제 단위로 쪼갠다:
 
 - `1.`, `2.` 처럼 "숫자+ 마침표"로 시작하는 줄을 새 문제의 시작으로 본다.
@@ -114,25 +136,25 @@ run.cmd run python ocr_pipeline.py --force        :: 이미 처리한 것도 다
 
 규칙 기반이라 완벽하지 않다 — 문제 번호가 `①②③` 형태이거나 OX 퀴즈처럼 다른
 레이아웃이면 정확도가 떨어질 수 있다. 원본 `full_text`/`paragraphs`는 그대로
-`ocr_json`에 남아있으니 파싱이 틀려도 정보가 사라지지는 않는다.
+`data/ocr_json/`에 남아있으니 파싱이 틀려도 정보가 사라지지는 않는다.
 
 ```cmd
-run.cmd run python quiz_parser.py --selftest   # 실제 캡처 예시로 파싱 규칙 검증
+run.cmd run python pipeline/quiz_parser.py --selftest   # 실제 캡처 예시로 파싱 규칙 검증
 ```
 
-## 4단계 — PDF 내보내기 (`export_pdf.py`)
+## 4단계 — PDF 내보내기 (`pipeline/export_pdf.py`)
 
-`ocr_json/` 을 과목별로 묶고 캡처시각순으로 정렬해 `pdf/quiz_review.pdf` 한 장으로 합친다.
+`data/ocr_json/` 을 과목별로 묶고 캡처시각순으로 정렬해 `data/pdf/quiz_review.pdf` 한 장으로 합친다.
 
 ```cmd
-run.cmd run python export_pdf.py                  :: 전체 -> pdf/quiz_review.pdf
-run.cmd run python export_pdf.py --subject 수학     :: 특정 과목만
-run.cmd run python export_pdf.py --selftest        :: 합성 데이터로 검증
+run.cmd run python pipeline/export_pdf.py                  :: 전체 -> data/pdf/quiz_review.pdf
+run.cmd run python pipeline/export_pdf.py --subject 수학     :: 특정 과목만
+run.cmd run python pipeline/export_pdf.py --selftest        :: 합성 데이터로 검증
 ```
 
-## 5단계 — 클라우드 동기화 (`sync_pipeline.py`)
+## 5단계 — 클라우드 동기화 (`pipeline/sync_pipeline.py`)
 
-`ocr_json/`의 `questions`(문제 단위)를 Firestore `questions` 컬렉션에 문제 1개당
+`data/ocr_json/`의 `questions`(문제 단위)를 Firestore `questions` 컬렉션에 문제 1개당
 문서 1개로 올려서, PC 가 꺼져 있어도 폰 PWA 에서 조회할 수 있게 한다. 문서 필드는
 `subject`(과목), `question`(문제), `choices`(보기 배열), `answer_index`(정답
 번호, 1부터·못 찾으면 null), `captured_at`, `source_image`, `ocr_backend`,
@@ -147,10 +169,10 @@ run.cmd run python export_pdf.py --selftest        :: 합성 데이터로 검증
 3. `.env` 에 `FIREBASE_PROJECT_ID`, `FIREBASE_SERVICE_ACCOUNT_PATH` 채우기.
 
 ```cmd
-run.cmd run python sync_pipeline.py --dry-run    :: 실제 전송 없이 페이로드만 확인
-run.cmd run python sync_pipeline.py              :: 실제 동기화 (이미 된 건 skip)
-run.cmd run python sync_pipeline.py --force      :: 이미 된 것도 다시
-run.cmd run python sync_pipeline.py --selftest   :: 키/네트워크 없이 동작 검증
+run.cmd run python pipeline/sync_pipeline.py --dry-run    :: 실제 전송 없이 페이로드만 확인
+run.cmd run python pipeline/sync_pipeline.py              :: 실제 동기화 (이미 된 건 skip)
+run.cmd run python pipeline/sync_pipeline.py --force      :: 이미 된 것도 다시
+run.cmd run python pipeline/sync_pipeline.py --selftest   :: 키/네트워크 없이 동작 검증
 ```
 
 > **여러 컴퓨터에서 쓴다면**: `.env`의 `FIREBASE_SERVICE_ACCOUNT_PATH`는 절대경로라
@@ -168,8 +190,8 @@ Firebase Hosting 에 배포하면 그 주소를 폰 브라우저에서 열고 "�
 1. `webapp/firebase-config.js` 를 Firebase 콘솔의 웹 앱 SDK 설정값으로 채운다
    (이 값은 비밀키가 아니라 커밋해도 안전 — 접근 제어는 `firestore.rules` 가 담당).
 2. 배포 설정은 `firebase.json` 에 이미 들어 있다 (호스팅 = `webapp/`, 규칙 =
-   `firestore.rules`). `firestore.rules` 는 `captures` 컬렉션을 읽기 전용 공개로
-   설정한다. ⚠️ 즉 이 웹 주소와 설정을 아는 사람은 누구나 캡처된 텍스트를 읽을 수
+   `firestore.rules`). `firestore.rules` 는 `questions` 컬렉션을 읽기 전용 공개로
+   설정한다. ⚠️ 즉 이 웹 주소와 설정을 아는 사람은 누구나 캡처된 문제/보기를 읽을 수
    있다 — 개인정보가 아닌 학습용 텍스트를 가정한 트레이드오프다.
 3. 최초 1회 (Node.js 필요):
    ```cmd
@@ -190,6 +212,6 @@ Firebase Hosting 에 배포하면 그 주소를 폰 브라우저에서 열고 "�
 
 ## 커밋하지 않는 것
 
-`.env`(비밀 키), `venv/` · `.venv/`, `capture/` · `ocr_text/` · `ocr_json/` · `pdf/` ·
-`sync_state.json`(생성물). Firebase 서비스 계정 키는 이 저장소 안에 두지 않는다
-(Drive 동기화 폴더이므로 `.gitignore` 로도 Drive 업로드를 막을 수 없기 때문).
+`.env`(비밀 키), `venv/` · `.venv/`, `data/`(캡처·OCR·PDF·동기화 상태 등 생성물 전부).
+Firebase 서비스 계정 키는 이 저장소 안에 두지 않는다(Drive 동기화 폴더이므로
+`.gitignore` 로도 Drive 업로드를 막을 수 없기 때문).
