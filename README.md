@@ -11,7 +11,7 @@
 | 3. 구조화 파싱 (문제 단위 분리) | — | 보류 (지금은 보기 단위 정답 표시로 충분) |
 | 4. PDF 내보내기 | `export_pdf.py` | ✅ |
 | 5. 클라우드 동기화 (Firestore) | `sync_pipeline.py` | ✅ (Firebase 서비스 계정 키 필요) |
-| 6. 폰 PWA 로 다시보기 | `webapp/` | ✅ (Firebase Hosting 배포 필요) |
+| 6. 폰 PWA 로 다시보기 | `webapp/` | ✅ 배포됨 — https://mommy-stduy.web.app |
 
 ## 개발 환경
 
@@ -104,6 +104,10 @@ Firebase Hosting 에 배포하면 그 주소를 폰 브라우저에서 열고 "�
    ```
    배포가 끝나면 `https://<프로젝트ID>.web.app` 주소가 출력된다. 폰 브라우저에서 열고
    "홈 화면에 추가"하면 앱 아이콘이 생긴다.
+
+   > `firebase login`이 대화형 터미널이 아닌 곳(예: 스크립트/에이전트로 실행)에서
+   > 크래시하면(`UV_HANDLE_CLOSING` 등), PowerShell/터미널을 직접 열어 그 안에서
+   > 실행할 것 — 실제 배포 주소: **https://mommy-stduy.web.app**
 4. 이후 수정할 때마다 `firebase deploy` 로 재배포. 폰은 다음에 열 때 자동 반영된다.
 5. 로컬에서 미리 보려면: `webapp/` 안에서 `python -m http.server` 실행 후
    `http://localhost:8000` 접속. (Firestore 는 실제 프로젝트에 연결된다.)
