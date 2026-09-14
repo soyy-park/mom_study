@@ -10,3 +10,8 @@ __pycache__/
 capture/
 ocr_text/
 ocr_json/
+pdf/
+sync_state.json
+
+# Firebase CLI 배포 캐시
+.firebase/
