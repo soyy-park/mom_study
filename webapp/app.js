@@ -18,9 +18,11 @@ const searchInput = document.getElementById("search-input");
 const backBtn = document.getElementById("back-btn");
 const detailSubjectEl = document.getElementById("detail-subject");
 const detailTimeEl = document.getElementById("detail-time");
-const detailTextEl = document.getElementById("detail-text");
+const detailQuestionEl = document.getElementById("detail-question");
+const detailChoicesEl = document.getElementById("detail-choices");
+const detailNoAnswerEl = document.getElementById("detail-no-answer");
 
-let allCaptures = [];
+let allQuestions = [];
 
 function formatTime(ts) {
   if (!ts) return "";
@@ -31,12 +33,12 @@ function formatTime(ts) {
   });
 }
 
-function groupBySubject(captures) {
+function groupBySubject(questions) {
   const groups = new Map();
-  for (const c of captures) {
-    const key = c.subject || "무제";
+  for (const q of questions) {
+    const key = q.subject || "무제";
     if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(c);
+    groups.get(key).push(q);
   }
   return new Map([...groups.entries()].sort((a, b) => a[0].localeCompare(b[0], "ko")));
 }
@@ -44,17 +46,18 @@ function groupBySubject(captures) {
 function render(filterText) {
   const needle = (filterText || "").trim().toLowerCase();
   const filtered = !needle
-    ? allCaptures
-    : allCaptures.filter(
-        (c) =>
-          (c.subject || "").toLowerCase().includes(needle) ||
-          (c.full_text || "").toLowerCase().includes(needle)
+    ? allQuestions
+    : allQuestions.filter(
+        (q) =>
+          (q.subject || "").toLowerCase().includes(needle) ||
+          (q.question || "").toLowerCase().includes(needle) ||
+          (q.choices || []).some((c) => c.toLowerCase().includes(needle))
       );
 
   subjectGroupsEl.innerHTML = "";
   if (filtered.length === 0) {
-    statusEl.textContent = allCaptures.length === 0
-      ? "아직 동기화된 캡처가 없습니다."
+    statusEl.textContent = allQuestions.length === 0
+      ? "아직 동기화된 문제가 없습니다."
       : "검색 결과가 없습니다.";
     return;
   }
@@ -74,7 +77,7 @@ function render(filterText) {
       card.className = "capture-card";
       card.innerHTML = `
         <div class="capture-time">${formatTime(item.captured_at)}</div>
-        <div class="capture-preview">${escapeHtml(item.full_text || "(내용 없음)")}</div>
+        <div class="capture-preview">${escapeHtml(item.question || "(문제 없음)")}</div>
       `;
       card.addEventListener("click", () => showDetail(item));
       groupEl.appendChild(card);
@@ -89,23 +92,23 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-function renderDetailText(text) {
-  detailTextEl.innerHTML = "";
-  const lines = (text || "(내용 없음)").split("\n");
-  for (const line of lines) {
-    const div = document.createElement("div");
-    if (line.startsWith("[정답]")) {
-      div.className = "answer-line";
-    }
-    div.textContent = line;
-    detailTextEl.appendChild(div);
-  }
+function renderDetailChoices(item) {
+  detailChoicesEl.innerHTML = "";
+  const choices = item.choices || [];
+  choices.forEach((choice, i) => {
+    const li = document.createElement("li");
+    li.className = "choice" + (i + 1 === item.answer_index ? " correct" : "");
+    li.textContent = choice;
+    detailChoicesEl.appendChild(li);
+  });
+  detailNoAnswerEl.hidden = item.answer_index != null;
 }
 
 function showDetail(item) {
   detailSubjectEl.textContent = item.subject || "무제";
   detailTimeEl.textContent = formatTime(item.captured_at);
-  renderDetailText(item.full_text);
+  detailQuestionEl.textContent = item.question || "(문제 없음)";
+  renderDetailChoices(item);
   listView.hidden = true;
   detailView.hidden = false;
   window.scrollTo(0, 0);
@@ -129,9 +132,9 @@ async function load() {
     const db = initializeFirestore(app, {
       localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
     });
-    const q = query(collection(db, "captures"), orderBy("captured_at", "desc"));
+    const q = query(collection(db, "questions"), orderBy("captured_at", "desc"));
     const snapshot = await getDocs(q);
-    allCaptures = snapshot.docs.map((doc) => doc.data());
+    allQuestions = snapshot.docs.map((doc) => doc.data());
     render(searchInput.value);
   } catch (err) {
     statusEl.textContent = `불러오기 실패: ${err.message}`;
