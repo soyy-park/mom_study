@@ -1,6 +1,6 @@
-"""OCR 결과 -> Firestore 동기화 (4단계)
+"""OCR 결과 -> Firestore 동기화 (5단계)
 
-ocr_json/ 의 레코드(캡처 한 장, 문제 여러 개 포함 가능)를 문제 단위로 풀어서
+data/ocr_json/ 의 레코드(캡처 한 장, 문제 여러 개 포함 가능)를 문제 단위로 풀어서
 Firestore `questions` 컬렉션에 올린다. 캡처 화면 좌표(paragraphs/bbox)나 원본
 텍스트 통짜(full_text)는 뷰어에 불필요해 동기화하지 않고, 과목/문제/보기/
 정답번호 같은 필요한 필드만 보낸다.
@@ -14,11 +14,11 @@ Firestore 에 남을 수 있다(자동 정리는 하지 않음 - 드물게 재�
 에 넣어도 파일 자체가 Drive 에는 올라가므로, 키 파일은 Drive 밖(.env 의
 FIREBASE_SERVICE_ACCOUNT_PATH)에 두고 경로만 참조한다.
 
-사용법:
-    python sync_pipeline.py                # ocr_json 전체 동기화 (이미 된 건 skip)
-    python sync_pipeline.py --force        # 이미 동기화된 것도 다시
-    python sync_pipeline.py --dry-run      # 실제 전송 없이 페이로드만 로그
-    python sync_pipeline.py --selftest     # 키/네트워크 없이 전체 흐름 검증
+사용법 (프로젝트 루트에서 실행):
+    python pipeline/sync_pipeline.py                # data/ocr_json 전체 동기화 (이미 된 건 skip)
+    python pipeline/sync_pipeline.py --force        # 이미 동기화된 것도 다시
+    python pipeline/sync_pipeline.py --dry-run      # 실제 전송 없이 페이로드만 로그
+    python pipeline/sync_pipeline.py --selftest     # 키/네트워크 없이 전체 흐름 검증
 """
 
 import argparse
@@ -28,8 +28,8 @@ import json
 import os
 import sys
 
-JSON_DIR = "ocr_json"
-STATE_PATH = "sync_state.json"
+JSON_DIR = "data/ocr_json"
+STATE_PATH = "data/sync_state.json"
 COLLECTION = "questions"
 
 
@@ -331,7 +331,7 @@ def selftest():
 # --------------------------------------------------------------------------- #
 def main():
     parser = argparse.ArgumentParser(description="OCR 결과를 Firestore 로 동기화")
-    parser.add_argument("--input", default=JSON_DIR, help="입력 폴더 (기본: ocr_json)")
+    parser.add_argument("--input", default=JSON_DIR, help="입력 폴더 (기본: data/ocr_json)")
     parser.add_argument("--force", action="store_true", help="이미 동기화된 것도 다시")
     parser.add_argument("--dry-run", action="store_true", help="실제 전송 없이 페이로드만 로그")
     parser.add_argument("--selftest", action="store_true", help="키/네트워크 없이 전체 흐름 검증")

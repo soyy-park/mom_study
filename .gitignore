@@ -6,12 +6,8 @@ __pycache__/
 # 비밀 값
 .env
 
-# 생성물 (원본/중간 산출물)
-capture/
-ocr_text/
-ocr_json/
-pdf/
-sync_state.json
+# 생성물 (원본/중간 산출물) - pipeline/ 스크립트들이 실행 시 만듦
+data/
 
 # Firebase CLI 배포 캐시
 .firebase/

@@ -3,9 +3,9 @@
 # 이 래퍼는 uv 에게 가상환경 위치를 알려준 뒤 명령을 그대로 전달한다.
 #
 # 사용 예:
-#   .\run.ps1 sync                         <- 의존성 설치/갱신
-#   .\run.ps1 run python capture_app.py    <- 캡처 프로그램 실행
-#   .\run.ps1 run python ocr_pipeline.py --selftest
+#   .\run.ps1 sync                                  <- 의존성 설치/갱신
+#   .\run.ps1 run python pipeline/capture_app.py    <- 캡처 프로그램 실행
+#   .\run.ps1 run python pipeline/ocr_pipeline.py --selftest
 if (-not $env:UV_PROJECT_ENVIRONMENT) {
     $env:UV_PROJECT_ENVIRONMENT = Join-Path $env:LOCALAPPDATA "uv-envs\quiz-capture"
 }

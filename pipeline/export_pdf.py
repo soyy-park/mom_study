@@ -1,13 +1,13 @@
-"""OCR 결과 -> PDF 문서 (3단계)
+"""OCR 결과 -> PDF 문서 (4단계)
 
-ocr_json/ 의 레코드를 읽어 과목별로 묶고 캡처시각순으로 정렬해
-사람이 읽기 좋은 PDF 한 장(pdf/quiz_review.pdf)으로 합친다.
+data/ocr_json/ 의 레코드를 읽어 과목별로 묶고 캡처시각순으로 정렬해
+사람이 읽기 좋은 PDF 한 장(data/pdf/quiz_review.pdf)으로 합친다.
 
-사용법:
-    python export_pdf.py                       # ocr_json 전체 -> pdf/quiz_review.pdf
-    python export_pdf.py --subject 수학          # 특정 과목만
-    python export_pdf.py --output pdf/math.pdf  # 출력 경로 지정
-    python export_pdf.py --selftest             # 합성 데이터로 전체 흐름 검증
+사용법 (프로젝트 루트에서 실행):
+    python pipeline/export_pdf.py                            # 전체 -> data/pdf/quiz_review.pdf
+    python pipeline/export_pdf.py --subject 수학               # 특정 과목만
+    python pipeline/export_pdf.py --output data/pdf/math.pdf  # 출력 경로 지정
+    python pipeline/export_pdf.py --selftest                  # 합성 데이터로 전체 흐름 검증
 """
 
 import argparse
@@ -17,8 +17,8 @@ import json
 import os
 import sys
 
-JSON_DIR = "ocr_json"
-OUTPUT_PATH = os.path.join("pdf", "quiz_review.pdf")
+JSON_DIR = "data/ocr_json"
+OUTPUT_PATH = os.path.join("data", "pdf", "quiz_review.pdf")
 
 FONT_REGULAR = "C:/Windows/Fonts/malgun.ttf"
 FONT_BOLD = "C:/Windows/Fonts/malgunbd.ttf"
@@ -221,8 +221,8 @@ def selftest():
 # --------------------------------------------------------------------------- #
 def main():
     parser = argparse.ArgumentParser(description="OCR 결과를 PDF 로 내보내기")
-    parser.add_argument("--input", default=JSON_DIR, help="입력 폴더 (기본: ocr_json)")
-    parser.add_argument("--output", default=OUTPUT_PATH, help="출력 PDF 경로 (기본: pdf/quiz_review.pdf)")
+    parser.add_argument("--input", default=JSON_DIR, help="입력 폴더 (기본: data/ocr_json)")
+    parser.add_argument("--output", default=OUTPUT_PATH, help="출력 PDF 경로 (기본: data/pdf/quiz_review.pdf)")
     parser.add_argument("--subject", default=None, help="특정 과목만 내보내기")
     parser.add_argument("--selftest", action="store_true", help="합성 데이터로 전체 흐름 검증")
     args = parser.parse_args()

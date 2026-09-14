@@ -3,12 +3,12 @@
 Windows 데스크톱에서 실행하는 화면 영역 캡처 도구.
 - 메인 창의 "캡처" 버튼을 누르면 전체화면 반투명 오버레이가 뜬다.
 - 오버레이 위에서 마우스를 드래그해 사각형 영역을 선택한다.
-- 마우스를 떼면 그 영역만 캡처해서 capture/{과목명}_{YYYYMMDD_HHMMSS}.png 로 저장한다.
+- 마우스를 떼면 그 영역만 캡처해서 data/capture/{과목명}_{YYYYMMDD_HHMMSS}.png 로 저장한다.
 - ESC 로 선택을 취소한다.
 
-사용법:
-    python capture_app.py            # GUI 실행
-    python capture_app.py --selftest # GUI 조작 없이 캡처/저장/초기화 검증
+사용법 (프로젝트 루트에서 실행):
+    python pipeline/capture_app.py            # GUI 실행
+    python pipeline/capture_app.py --selftest # GUI 조작 없이 캡처/저장/초기화 검증
 """
 
 import datetime
@@ -18,7 +18,7 @@ import sys
 import mss
 from PIL import Image
 
-CAPTURE_DIR = "capture"
+CAPTURE_DIR = "data/capture"
 
 
 # --------------------------------------------------------------------------- #
@@ -68,7 +68,7 @@ def sanitize_subject(subject):
 
 
 def save_capture(image, subject):
-    """PIL.Image 를 capture/{과목명}_{타임스탬프}.png 로 저장하고 경로 반환."""
+    """PIL.Image 를 data/capture/{과목명}_{타임스탬프}.png 로 저장하고 경로 반환."""
     os.makedirs(CAPTURE_DIR, exist_ok=True)
     stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{sanitize_subject(subject)}_{stamp}.png"
@@ -232,7 +232,7 @@ def selftest():
     print(f"mss      : {_mss.__version__}")
     print(f"pillow   : {Image.__version__ if hasattr(Image, '__version__') else 'n/a'}")
 
-    # 1) capture/ 폴더 생성
+    # 1) data/capture/ 폴더 생성
     os.makedirs(CAPTURE_DIR, exist_ok=True)
     print(f"[1] capture dir  : {os.path.abspath(CAPTURE_DIR)}  exists={os.path.isdir(CAPTURE_DIR)}")
 

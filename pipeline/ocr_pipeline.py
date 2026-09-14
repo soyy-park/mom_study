@@ -1,18 +1,18 @@
 """학습 영상 퀴즈 캡처 -> OCR 파이프라인 (2단계)
 
-capture/ 폴더의 PNG들을 읽어 OCR 을 돌리고, 결과를 두 형태로 저장한다.
-  - ocr_text/{이름}.txt   : OCR 원문 (사람이 눈으로 확인/수정)
-  - ocr_json/{이름}.json  : 다음 단계(구조화/DB) 입력용. 과목/캡처시각/원문/문단 위치 포함
+data/capture/ 폴더의 PNG들을 읽어 OCR 을 돌리고, 결과를 두 형태로 저장한다.
+  - data/ocr_text/{이름}.txt   : OCR 원문 (사람이 눈으로 확인/수정)
+  - data/ocr_json/{이름}.json  : 다음 단계(구조화/DB) 입력용. 과목/캡처시각/원문/문단 위치 포함
 
 OCR 백엔드는 교체 가능:
   - google : Google Cloud Vision REST API (DOCUMENT_TEXT_DETECTION, 한국어 힌트)
   - stub   : 가짜 텍스트 반환. API 키 없이 파이프라인 배관 검증용
 
-사용법:
-    python ocr_pipeline.py                     # capture/ 전체 처리 (.env 의 OCR_BACKEND 사용)
-    python ocr_pipeline.py --backend google    # 백엔드 강제 지정
-    python ocr_pipeline.py --force             # 이미 처리된 것도 다시
-    python ocr_pipeline.py --selftest          # GUI/키 없이 전체 흐름 검증
+사용법 (프로젝트 루트에서 실행):
+    python pipeline/ocr_pipeline.py                     # data/capture/ 전체 처리 (.env 의 OCR_BACKEND 사용)
+    python pipeline/ocr_pipeline.py --backend google    # 백엔드 강제 지정
+    python pipeline/ocr_pipeline.py --force             # 이미 처리된 것도 다시
+    python pipeline/ocr_pipeline.py --selftest          # GUI/키 없이 전체 흐름 검증
 """
 
 import argparse
@@ -24,9 +24,9 @@ import sys
 
 from quiz_parser import parse_questions
 
-CAPTURE_DIR = "capture"
-TEXT_DIR = "ocr_text"
-JSON_DIR = "ocr_json"
+CAPTURE_DIR = "data/capture"
+TEXT_DIR = "data/ocr_text"
+JSON_DIR = "data/ocr_json"
 
 GOOGLE_VISION_ENDPOINT = "https://vision.googleapis.com/v1/images:annotate"
 
@@ -427,7 +427,7 @@ def main():
     parser = argparse.ArgumentParser(description="캡처 이미지 OCR 파이프라인")
     parser.add_argument("--backend", help="google | stub  (기본: .env 의 OCR_BACKEND, 없으면 google)")
     parser.add_argument("--force", action="store_true", help="이미 처리된 것도 다시 OCR")
-    parser.add_argument("--input", default=CAPTURE_DIR, help="입력 폴더 (기본: capture)")
+    parser.add_argument("--input", default=CAPTURE_DIR, help="입력 폴더 (기본: data/capture)")
     parser.add_argument("--selftest", action="store_true", help="키 없이 전체 흐름 검증")
     args = parser.parse_args()
 

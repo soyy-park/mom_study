@@ -9,7 +9,7 @@ ocr_pipeline.py 가 만든 paragraphs(문단별 텍스트 + is_answer)를 입력
 answer_index 는 화면에 파란 원(정답 표시)이 없으면 None.
 
 사용법:
-    python quiz_parser.py --selftest   # 실제 캡처 예시로 파싱 규칙 검증
+    python pipeline/quiz_parser.py --selftest   # 실제 캡처 예시로 파싱 규칙 검증
 """
 
 import re
@@ -155,4 +155,4 @@ def selftest():
 if __name__ == "__main__":
     if "--selftest" in sys.argv:
         raise SystemExit(selftest())
-    print("사용법: python quiz_parser.py --selftest")
+    print("사용법: python pipeline/quiz_parser.py --selftest")
