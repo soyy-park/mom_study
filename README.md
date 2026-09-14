@@ -55,7 +55,7 @@ run.cmd run python ocr_pipeline.py
 |---|---|---|
 | 1. 화면 캡처 | `capture_app.py` | ✅ |
 | 2. OCR 추출 + 정답 자동 감지 | `ocr_pipeline.py` | ✅ (Google Vision 키 필요) |
-| 3. 구조화 파싱 (문제 단위 분리) | — | 보류 (지금은 보기 단위 정답 표시로 충분) |
+| 3. 구조화 파싱 (문제/보기/정답 분리) | `quiz_parser.py` | ✅ |
 | 4. PDF 내보내기 | `export_pdf.py` | ✅ |
 | 5. 클라우드 동기화 (Firestore) | `sync_pipeline.py` | ✅ (Firebase 서비스 계정 키 필요) |
 | 6. 폰 PWA 로 다시보기 | `webapp/` | ✅ 배포됨 — https://mommy-stduy.web.app |
@@ -83,14 +83,13 @@ run.cmd run python sync_pipeline.py             :: 5단계 Firestore 동기화
 ## 2단계 — OCR + 정답 감지 (`ocr_pipeline.py`)
 
 `capture/` 의 PNG 를 읽어 OCR → `ocr_text/{이름}.txt` (원문) + `ocr_json/{이름}.json`
-(과목·캡처시각·원문·문단 위치). OCR 백엔드는 교체 가능:
+(과목·캡처시각·원문·문단 위치·**구조화된 문제 목록**). OCR 백엔드는 교체 가능:
 
 **정답 자동 감지**: 이 강의 플랫폼은 정답 보기를 파란색 원으로 표시한다. 각 보기
-줄 앞부분(번호 동그라미)의 색상을 원본 이미지에서 직접 샘플링해 파란색이면 그 줄
-앞에 `[정답] ` 을 붙인다 — 별도 AI 모델 없이 Vision API 가 이미 주는 좌표로 평균
-RGB만 비교하는 방식이라 추가 비용/호출이 없다. `export_pdf.py`(굵은 파란 글씨)와
-`webapp/`(파란 강조) 모두 이 마커를 그대로 강조해서 보여준다. 화면에 정답이
-파란색으로 표시되지 않는 퀴즈(다른 강의 플랫폼 등)에서는 감지되지 않는다.
+줄 앞부분(번호 동그라미)의 색상을 원본 이미지에서 직접 샘플링해 파란색이면 그 줄을
+정답으로 표시한다 — 별도 AI 모델 없이 Vision API 가 이미 주는 좌표로 평균 RGB만
+비교하는 방식이라 추가 비용/호출이 없다. 화면에 정답이 파란색으로 표시되지 않는
+퀴즈(다른 강의 플랫폼 등)에서는 감지되지 않는다(정답 없이 문제/보기만 저장됨).
 
 - `google` — Google Cloud Vision REST API. `.env.example` 을 `.env` 로 복사하고
   `GOOGLE_VISION_API_KEY` 를 채운다.
@@ -99,6 +98,26 @@ RGB만 비교하는 방식이라 추가 비용/호출이 없다. `export_pdf.py`
 ```cmd
 run.cmd run python ocr_pipeline.py --backend google
 run.cmd run python ocr_pipeline.py --force        :: 이미 처리한 것도 다시
+```
+
+## 3단계 — 구조화 파싱 (`quiz_parser.py`)
+
+`ocr_pipeline.py` 가 안에서 자동으로 호출한다(따로 실행할 일 없음). 캡처 한 장에
+문제가 여러 개 들어있어도 문단(`paragraphs`)을 정규식 규칙으로 문제 단위로 쪼갠다:
+
+- `1.`, `2.` 처럼 "숫자+ 마침표"로 시작하는 줄을 새 문제의 시작으로 본다.
+- 그 다음 줄부터 다음 문제 전까지는 보기로 모으고, 앞에 붙은 번호 기호
+  (`①` `1)` 등)는 잘라낸다.
+- 정답 표시(위 2단계)가 된 보기의 순번을 `answer_index`(1부터)로 기록한다.
+- 브라우저 주소/파일 경로가 같이 캡처된 경우나 "정답풀이" 같은 화면 버튼 글자는
+  잡음으로 걸러낸다.
+
+규칙 기반이라 완벽하지 않다 — 문제 번호가 `①②③` 형태이거나 OX 퀴즈처럼 다른
+레이아웃이면 정확도가 떨어질 수 있다. 원본 `full_text`/`paragraphs`는 그대로
+`ocr_json`에 남아있으니 파싱이 틀려도 정보가 사라지지는 않는다.
+
+```cmd
+run.cmd run python quiz_parser.py --selftest   # 실제 캡처 예시로 파싱 규칙 검증
 ```
 
 ## 4단계 — PDF 내보내기 (`export_pdf.py`)
@@ -113,8 +132,12 @@ run.cmd run python export_pdf.py --selftest        :: 합성 데이터로 검증
 
 ## 5단계 — 클라우드 동기화 (`sync_pipeline.py`)
 
-`ocr_json/` 을 Firestore `captures` 컬렉션에 올려서, PC 가 꺼져 있어도 폰 PWA 에서
-조회할 수 있게 한다.
+`ocr_json/`의 `questions`(문제 단위)를 Firestore `questions` 컬렉션에 문제 1개당
+문서 1개로 올려서, PC 가 꺼져 있어도 폰 PWA 에서 조회할 수 있게 한다. 문서 필드는
+`subject`(과목), `question`(문제), `choices`(보기 배열), `answer_index`(정답
+번호, 1부터·못 찾으면 null), `captured_at`, `source_image`, `ocr_backend`,
+`synced_at` 뿐 — 화면 좌표나 원본 텍스트 통짜는 폰에 불필요해 올리지 않는다.
+문서 ID는 `{캡처파일명}_q{순번}`.
 
 1. [Firebase 콘솔](https://console.firebase.google.com/) 에서 프로젝트 생성(기존 Vision
    API 를 쓰는 GCP 프로젝트를 그대로 써도 됨), Firestore 사용 설정.
@@ -129,6 +152,12 @@ run.cmd run python sync_pipeline.py              :: 실제 동기화 (이미 된
 run.cmd run python sync_pipeline.py --force      :: 이미 된 것도 다시
 run.cmd run python sync_pipeline.py --selftest   :: 키/네트워크 없이 동작 검증
 ```
+
+> **여러 컴퓨터에서 쓴다면**: `.env`의 `FIREBASE_SERVICE_ACCOUNT_PATH`는 절대경로라
+> 컴퓨터마다 다르다(이 폴더는 Google Drive로 동기화되지만 키 파일 자체는 의도적으로
+> Drive 밖에 둔다). 새 컴퓨터에서는 그 컴퓨터의 `%LOCALAPPDATA%`에 키 파일을 따로
+> 복사해두고 `.env` 경로를 그 컴퓨터 기준으로 맞춰야 한다. `--dry-run`은 키 없이도
+> 되니 파싱 결과만 먼저 확인할 때 쓴다.
 
 ## 6단계 — 폰에서 다시보기 (`webapp/`, PWA)
 
