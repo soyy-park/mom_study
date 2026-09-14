@@ -1,0 +1,127 @@
+:root {
+  color-scheme: light;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --accent: #2563eb;
+  --border: #e2e8f0;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Malgun Gothic", "Apple SD Gothic Neo", -apple-system, sans-serif;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--accent);
+  color: white;
+  padding: 14px 16px calc(14px + env(safe-area-inset-top)) 16px;
+  padding-top: max(14px, env(safe-area-inset-top));
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 18px;
+}
+
+main { padding: 12px 12px 32px 12px; max-width: 640px; margin: 0 auto; }
+
+.search-row { margin-bottom: 12px; }
+
+#search-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+  background: var(--card);
+  color: var(--text);
+}
+
+.status { color: var(--muted); font-size: 13px; padding: 8px 2px; }
+
+.subject-group { margin-bottom: 18px; }
+
+.subject-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+  margin: 0 0 6px 4px;
+}
+
+.capture-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.capture-card:active { background: #f1f5f9; }
+
+.capture-time { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+
+.capture-preview {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 15px;
+  padding: 8px 0;
+  margin-bottom: 8px;
+}
+
+.detail-meta { margin-bottom: 10px; }
+.detail-subject { font-size: 18px; font-weight: 700; }
+.detail-time { font-size: 13px; color: var(--muted); }
+
+.detail-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.6;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.detail-text .answer-line {
+  color: #1565c0;
+  font-weight: 700;
+}
+
+@media (prefers-color-scheme: dark) {
+  .detail-text .answer-line { color: #64b5f6; }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #0b1220;
+    --card: #131b2c;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --border: #24304a;
+  }
+  #search-input { color: var(--text); }
+}

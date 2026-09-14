@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>학습 퀴즈 복습</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#2563eb" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>학습 퀴즈 복습</h1>
+  </header>
+
+  <main id="list-view">
+    <div class="search-row">
+      <input id="search-input" type="search" placeholder="과목 또는 내용 검색..." />
+    </div>
+    <div id="status" class="status"></div>
+    <div id="subject-groups"></div>
+  </main>
+
+  <main id="detail-view" hidden>
+    <button id="back-btn" class="back-btn">&larr; 목록으로</button>
+    <div class="detail-meta">
+      <div id="detail-subject" class="detail-subject"></div>
+      <div id="detail-time" class="detail-time"></div>
+    </div>
+    <pre id="detail-text" class="detail-text"></pre>
+  </main>
+
+  <script type="module" src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
