@@ -90,20 +90,45 @@ def build_pdf(records_by_subject, output_path, font_regular=FONT_REGULAR, font_b
             pdf.set_text_color(130, 130, 130)
             pdf.cell(0, 6, f"{captured_at}  ·  {source_image}", new_x="LMARGIN", new_y="NEXT")
 
-            body = record.get("full_text") or "(내용 없음)"
-            for line in body.splitlines() or [body]:
-                if line.startswith("[정답]"):
-                    pdf.set_font("Malgun", "B", 11)
-                    pdf.set_text_color(21, 101, 192)  # 정답으로 감지된 보기 강조
-                else:
-                    pdf.set_font("Malgun", "", 11)
-                    pdf.set_text_color(20, 20, 20)
-                pdf.multi_cell(0, 6.5, line, new_x="LMARGIN", new_y="NEXT")
+            questions = record.get("questions")
+            if questions:
+                for q in questions:
+                    _write_question(pdf, q)
+            else:
+                # 구조화 파싱이 안 된(또는 예전 스키마) 레코드는 원문 그대로 표시.
+                body = record.get("full_text") or "(내용 없음)"
+                for line in body.splitlines() or [body]:
+                    if line.startswith("[정답]"):
+                        pdf.set_font("Malgun", "B", 11)
+                        pdf.set_text_color(21, 101, 192)
+                    else:
+                        pdf.set_font("Malgun", "", 11)
+                        pdf.set_text_color(20, 20, 20)
+                    pdf.multi_cell(0, 6.5, line, new_x="LMARGIN", new_y="NEXT")
             pdf.ln(4)
 
     os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
     pdf.output(output_path)
     return output_path
+
+
+def _write_question(pdf, question):
+    pdf.set_font("Malgun", "B", 11)
+    pdf.set_text_color(20, 20, 20)
+    pdf.multi_cell(0, 6.5, question.get("question") or "(문제 없음)", new_x="LMARGIN", new_y="NEXT")
+
+    answer_index = question.get("answer_index")
+    for i, choice in enumerate(question.get("choices") or [], start=1):
+        is_answer = i == answer_index
+        pdf.set_font("Malgun", "B" if is_answer else "", 10)
+        pdf.set_text_color(21, 101, 192) if is_answer else pdf.set_text_color(20, 20, 20)
+        pdf.multi_cell(0, 6, f"{i}) {choice}", new_x="LMARGIN", new_y="NEXT")
+
+    if answer_index is None:
+        pdf.set_font("Malgun", "", 9)
+        pdf.set_text_color(180, 120, 0)
+        pdf.cell(0, 6, "(정답 표시가 감지되지 않았습니다)", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(2)
 
 
 # --------------------------------------------------------------------------- #
@@ -138,12 +163,16 @@ def selftest():
     os.makedirs(jdir)
 
     fixtures = [
-        ("수학_20260910_090000.json", "수학", "2026-09-10T09:00:00", "다음 중 옳은 것은?"),
-        ("수학_20260910_080000.json", "수학", "2026-09-10T08:00:00", "미분과 적분의 관계"),
-        ("영어_20260911_070000.json", "영어", "2026-09-11T07:00:00",
-         "빈칸에 알맞은 단어는?\n① apple\n[정답] ② banana\n③ cherry"),
+        ("수학_20260910_090000.json", "수학", "2026-09-10T09:00:00",
+         "다음 중 옳은 것은?", []),
+        ("수학_20260910_080000.json", "수학", "2026-09-10T08:00:00",
+         "미분과 적분의 관계", []),
+        ("영어_20260911_070000.json", "영어", "2026-09-11T07:00:00", "(생략)", [
+            {"question": "빈칸에 알맞은 단어는?", "choices": ["apple", "banana", "cherry"],
+             "answer_index": 2},
+        ]),
     ]
-    for name, subject, captured_at, text in fixtures:
+    for name, subject, captured_at, text, questions in fixtures:
         record = {
             "source_image": name.replace(".json", ".png"),
             "subject": subject,
@@ -151,6 +180,7 @@ def selftest():
             "ocr_backend": "stub",
             "full_text": text,
             "paragraphs": [],
+            "questions": questions,
         }
         with open(os.path.join(jdir, name), "w", encoding="utf-8") as fh:
             json.dump(record, fh, ensure_ascii=False)
