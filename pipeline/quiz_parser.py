@@ -36,6 +36,28 @@ NOISE_EXACT = {"정답풀이", "해설", "해설보기", "정답 및 해설", "�
 
 HANGUL_RE = re.compile(r"[가-힣]")
 
+# OX 문제의 동그라미(O) 아이콘을 Vision 이 "10"/"1 0"/"0" 등으로 잘못 읽는 경우가
+# 있다(같은 아이콘인데 호출마다 다르게 읽힘 - 폰트가 아니라 그래픽 아이콘이라서).
+# X 도 앞에 번호 기호가 잘못 붙어 "②X"/"2X" 처럼 나올 때가 있다.
+_OX_O_NOISE = {"10", "1 0", "0", "1o", "1O"}
+_OX_X_RE = re.compile(r"^[①②③④⑤]?\s*\d{0,2}\s*[Xx]$")
+
+
+def _normalize_ox_choices(choices):
+    """보기가 정확히 2개고 그중 하나가 X 로 보이면 OX 문제로 간주해 보정한다."""
+    if len(choices) != 2:
+        return choices
+    x_index = next((i for i, c in enumerate(choices) if _OX_X_RE.match(c.strip())), None)
+    if x_index is None:
+        return choices
+    other_index = 1 - x_index
+    other = choices[other_index].strip()
+    fixed = list(choices)
+    fixed[x_index] = "X"
+    if other in _OX_O_NOISE or other.upper() == "O":
+        fixed[other_index] = "O"
+    return fixed
+
 
 def _looks_like_url_noise(text):
     # 브라우저 주소창/파일 경로가 캡처 영역에 같이 잡힌 경우: 슬래시가 있고 한글이 없다.
@@ -54,7 +76,7 @@ def parse_questions(paragraphs):
     def finalize(q):
         return {
             "question": q["question"],
-            "choices": q["choices"],
+            "choices": _normalize_ox_choices(q["choices"]),
             "answer_index": q["answer_index"],
             "explanation": q["explanation"],
         }
@@ -185,7 +207,36 @@ def selftest():
     )
     print(f"[4] 해설로 정답 유추 : {fallback_ok}")
 
-    all_ok = q1_ok and q2_ok and no_noise and none_ok and fallback_ok
+    # OX 문제의 O 아이콘이 "10"으로 잘못 읽힌 실제 사례 - "O"로 보정돼야 한다.
+    ox_garbled = parse_questions([
+        {"text": "1. OX 질문", "is_answer": False},
+        {"text": "10", "is_answer": True},
+        {"text": "X", "is_answer": False},
+    ])
+    ox_ok = len(ox_garbled) == 1 and ox_garbled[0]["choices"] == ["O", "X"]
+
+    # X 쪽에 번호 기호가 잘못 붙은 경우("②X")도 "X"로 보정.
+    ox_x_garbled = parse_questions([
+        {"text": "1. OX 질문", "is_answer": False},
+        {"text": "O", "is_answer": False},
+        {"text": "②X", "is_answer": True},
+    ])
+    ox_x_ok = len(ox_x_garbled) == 1 and ox_x_garbled[0]["choices"] == ["O", "X"]
+
+    # 4지선다에서 진짜 숫자 보기("10")는 건드리면 안 된다.
+    real_number = parse_questions([
+        {"text": "1. 다음 중 소수는?", "is_answer": False},
+        {"text": "① 9", "is_answer": False},
+        {"text": "② 10", "is_answer": False},
+        {"text": "③ 11", "is_answer": True},
+        {"text": "④ 12", "is_answer": False},
+    ])
+    real_number_ok = len(real_number) == 1 and real_number[0]["choices"] == ["9", "10", "11", "12"]
+
+    print(f"[5] OX 보정        : ox_ok={ox_ok}  ox_x_ok={ox_x_ok}  real_number_ok={real_number_ok}")
+
+    all_ok = (q1_ok and q2_ok and no_noise and none_ok and fallback_ok
+              and ox_ok and ox_x_ok and real_number_ok)
     print(f"=== result: {'PASS' if all_ok else 'FAIL'} ===")
     return 0 if all_ok else 1
 

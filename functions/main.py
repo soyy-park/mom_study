@@ -41,6 +41,27 @@ EXPLANATION_RE = re.compile(r"^정답\s*(\d{1,2})번\s*(.*)", re.DOTALL)
 NOISE_EXACT = {"정답풀이", "해설", "해설보기", "정답 및 해설", "다음", "이전", "제출"}
 HANGUL_RE = re.compile(r"[가-힣]")
 
+# OX 문제의 동그라미(O) 아이콘을 Vision 이 "10"/"1 0"/"0" 등으로 잘못 읽는 경우가
+# 있다(같은 아이콘인데 호출마다 다르게 읽힘). X 도 앞에 번호 기호가 잘못 붙어
+# "②X"/"2X" 처럼 나올 때가 있다.
+_OX_O_NOISE = {"10", "1 0", "0", "1o", "1O"}
+_OX_X_RE = re.compile(r"^[①②③④⑤]?\s*\d{0,2}\s*[Xx]$")
+
+
+def _normalize_ox_choices(choices):
+    if len(choices) != 2:
+        return choices
+    x_index = next((i for i, c in enumerate(choices) if _OX_X_RE.match(c.strip())), None)
+    if x_index is None:
+        return choices
+    other_index = 1 - x_index
+    other = choices[other_index].strip()
+    fixed = list(choices)
+    fixed[x_index] = "X"
+    if other in _OX_O_NOISE or other.upper() == "O":
+        fixed[other_index] = "O"
+    return fixed
+
 
 def _looks_like_url_noise(text):
     return "/" in text and not HANGUL_RE.search(text)
@@ -53,7 +74,7 @@ def parse_questions(paragraphs):
     def finalize(q):
         return {
             "question": q["question"],
-            "choices": q["choices"],
+            "choices": _normalize_ox_choices(q["choices"]),
             "answer_index": q["answer_index"],
             "explanation": q["explanation"],
         }
