@@ -1,0 +1,4 @@
+firebase-functions>=0.4
+firebase-admin>=6
+requests>=2.31
+pillow>=11
