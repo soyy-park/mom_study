@@ -191,6 +191,7 @@ const solveRestartBtn = document.getElementById("solve-restart-btn");
 let solveQueue = [];
 let solveIndex = 0;
 let solveScore = 0;
+let solveMissedThisQuestion = false; // 이번 문제에서 오답을 한 번이라도 골랐는지
 
 function shuffle(arr) {
   const a = arr.slice();
@@ -258,6 +259,7 @@ function renderSolveQuestion() {
   solveFeedbackEl.hidden = true;
   solveExplanationEl.hidden = true;
   solveNextBtn.hidden = true;
+  solveMissedThisQuestion = false;
 
   solveChoicesEl.innerHTML = "";
   (item.choices || []).forEach((choice, i) => {
@@ -273,18 +275,32 @@ function renderSolveQuestion() {
 
 function answerSolve(pickedIndex, pickedBtn) {
   const item = solveQueue[solveIndex];
-  const buttons = [...solveChoicesEl.querySelectorAll(".choice-btn")];
-  buttons.forEach((b) => (b.disabled = true));
-
   const correct = pickedIndex === item.answer_index;
-  if (correct) solveScore += 1;
-
-  buttons[item.answer_index - 1].classList.add("correct");
-  if (!correct) pickedBtn.classList.add("wrong");
 
   solveFeedbackEl.hidden = false;
-  solveFeedbackEl.textContent = correct ? "정답입니다! 🎉" : "아쉬워요, 다시 확인해보세요.";
-  solveFeedbackEl.className = "solve-feedback " + (correct ? "correct" : "wrong");
+
+  if (!correct) {
+    // 오답: 고른 보기만 비활성화하고 틀렸다고 알려준 뒤, 나머지 보기는 계속
+    // 고를 수 있게 둔다 (정답 공개도 안 함).
+    solveMissedThisQuestion = true;
+    pickedBtn.disabled = true;
+    pickedBtn.classList.add("wrong");
+    solveFeedbackEl.textContent = "틀렸습니다. 다시 골라보세요.";
+    solveFeedbackEl.className = "solve-feedback wrong";
+    return;
+  }
+
+  // 정답: 이번에야 전체를 잠그고 정답 표시 + 해설 + 다음 문제로 넘어간다.
+  // 첫 시도에 맞혔을 때만 점수로 인정(다시 골라서 맞힌 건 학습으로만 카운트).
+  const buttons = [...solveChoicesEl.querySelectorAll(".choice-btn")];
+  buttons.forEach((b) => (b.disabled = true));
+  pickedBtn.classList.add("correct");
+  if (!solveMissedThisQuestion) solveScore += 1;
+
+  solveFeedbackEl.textContent = solveMissedThisQuestion
+    ? "정답입니다! (다시 시도해서 맞힘)"
+    : "정답입니다! 🎉";
+  solveFeedbackEl.className = "solve-feedback correct";
 
   if (item.explanation) {
     solveExplanationEl.hidden = false;
