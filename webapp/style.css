@@ -28,9 +28,22 @@ body {
   padding-top: max(14px, env(safe-area-inset-top));
 }
 
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .topbar h1 {
   margin: 0;
   font-size: 18px;
+}
+
+.topbar .back-btn {
+  color: white;
+  margin-bottom: 0;
+  padding: 4px 0;
+  flex-shrink: 0;
 }
 
 main { padding: 12px 12px 32px 12px; max-width: 640px; margin: 0 auto; }
@@ -157,4 +170,177 @@ main { padding: 12px 12px 32px 12px; max-width: 640px; margin: 0 auto; }
     --border: #24304a;
   }
   #search-input { color: var(--text); }
+}
+
+/* 홈: 랜딩 메뉴 */
+.home-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 8px;
+}
+
+.menu-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-card:active { background: #f1f5f9; }
+
+.menu-icon { font-size: 28px; }
+
+.menu-label { font-size: 17px; font-weight: 700; color: var(--text); }
+
+.menu-desc { font-size: 13px; color: var(--muted); }
+
+/* 퀴즈 등록 */
+.register-row { margin-bottom: 14px; }
+
+#register-subject {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+  background: var(--card);
+  color: var(--text);
+}
+
+.register-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.register-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  background: var(--accent);
+  color: white;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.register-btn:active { opacity: 0.85; }
+
+.register-queue {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.register-queue-item {
+  font-size: 13px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--muted);
+}
+
+.register-queue-item.done { color: #1565c0; }
+.register-queue-item.failed { color: #c62828; }
+
+/* 퀴즈 풀기 */
+.solve-subject-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.solve-subject-btn {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+}
+
+.solve-subject-btn:disabled { opacity: 0.5; cursor: default; }
+
+.solve-progress { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+
+.solve-choices .choice-btn {
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.solve-choices li { list-style: none; margin-bottom: 8px; }
+
+.solve-choices .choice-btn.correct {
+  color: #1565c0;
+  font-weight: 700;
+  border-color: #1565c0;
+  background: #e8f0fe;
+}
+
+.solve-choices .choice-btn.wrong {
+  color: #c62828;
+  font-weight: 700;
+  border-color: #c62828;
+  background: #fdecea;
+}
+
+.solve-choices .choice-btn:disabled { cursor: default; }
+
+.solve-feedback { font-size: 15px; font-weight: 700; margin: 10px 0; }
+.solve-feedback.correct { color: #1565c0; }
+.solve-feedback.wrong { color: #c62828; }
+
+.solve-score {
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  margin: 40px 0 20px;
+}
+
+.primary-btn {
+  width: 100%;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.primary-btn:active { opacity: 0.85; }
+
+@media (prefers-color-scheme: dark) {
+  .menu-card:active { background: #1b263b; }
+  .solve-choices .choice-btn.correct { color: #64b5f6; border-color: #64b5f6; background: #12213a; }
+  .solve-choices .choice-btn.wrong { color: #ef9a9a; border-color: #ef9a9a; background: #3a1414; }
+  .solve-feedback.correct { color: #64b5f6; }
+  .solve-feedback.wrong { color: #ef9a9a; }
 }

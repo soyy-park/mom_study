@@ -1,0 +1,17 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // 퀴즈 등록용 업로드. 읽기는 막아둔다(사진 자체는 공개할 필요 없음, OCR
+    // 결과만 questions 컬렉션으로 공개됨). 쓰기는 로그인 없이 허용하되
+    // 이미지 10MB 이하로만 제한 - 인증 없는 개인용 앱이라 완벽한 보안은
+    // 아니지만, 공개 URL이 알려지지 않는 한 남용 위험은 낮다.
+    match /uploads/{fileName} {
+      allow read: if false;
+      allow write: if request.resource.size < 10 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

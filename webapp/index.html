@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>학습 퀴즈 복습</title>
+<title>지니야 공부하자</title>
 <link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#2563eb" />
 <link rel="icon" href="icons/icon-192.png" />
@@ -12,10 +12,73 @@
 </head>
 <body>
   <header class="topbar">
-    <h1>학습 퀴즈 복습</h1>
+    <button id="home-btn" class="back-btn" hidden>&larr; 홈</button>
+    <h1>지니야 공부하자</h1>
   </header>
 
-  <main id="list-view">
+  <!-- 홈: 랜딩 페이지 -->
+  <main id="home-view">
+    <div class="home-menu">
+      <button class="menu-card" data-view="register-view">
+        <span class="menu-icon">📷</span>
+        <span class="menu-label">퀴즈 등록</span>
+        <span class="menu-desc">사진 찍거나 올려서 새 퀴즈 만들기</span>
+      </button>
+      <button class="menu-card" data-view="solve-view">
+        <span class="menu-icon">✏️</span>
+        <span class="menu-label">퀴즈 풀기</span>
+        <span class="menu-desc">문제를 직접 풀면서 복습하기</span>
+      </button>
+      <button class="menu-card" data-view="browse-view">
+        <span class="menu-icon">📚</span>
+        <span class="menu-label">퀴즈 보기</span>
+        <span class="menu-desc">등록된 문제 전체 훑어보기</span>
+      </button>
+    </div>
+  </main>
+
+  <!-- 퀴즈 등록 -->
+  <main id="register-view" hidden>
+    <div class="register-row">
+      <input id="register-subject" type="text" placeholder="과목명 (예: 수학)" />
+    </div>
+    <div class="register-buttons">
+      <label class="register-btn">
+        <span class="menu-icon">📷</span> 카메라로 촬영
+        <input type="file" accept="image/*" capture="environment" id="camera-input" hidden />
+      </label>
+      <label class="register-btn">
+        <span class="menu-icon">🖼️</span> 앨범에서 선택
+        <input type="file" accept="image/*" multiple id="gallery-input" hidden />
+      </label>
+    </div>
+    <div id="register-status" class="status"></div>
+    <ul id="register-queue" class="register-queue"></ul>
+  </main>
+
+  <!-- 퀴즈 풀기 -->
+  <main id="solve-view" hidden>
+    <div id="solve-setup">
+      <div class="status">풀고 싶은 과목을 골라주세요.</div>
+      <div id="solve-subject-list" class="solve-subject-list"></div>
+    </div>
+
+    <div id="solve-quiz" hidden>
+      <div id="solve-progress" class="solve-progress"></div>
+      <div id="solve-question" class="detail-question"></div>
+      <ol id="solve-choices" class="detail-choices solve-choices"></ol>
+      <div id="solve-feedback" class="solve-feedback" hidden></div>
+      <button id="solve-next-btn" class="primary-btn" hidden>다음 문제</button>
+    </div>
+
+    <div id="solve-result" hidden>
+      <div id="solve-score" class="solve-score"></div>
+      <button id="solve-restart-btn" class="primary-btn">다시 풀기</button>
+    </div>
+  </main>
+
+  <!-- 퀴즈 보기: 목록 -->
+  <main id="browse-view" hidden>
     <div class="search-row">
       <input id="search-input" type="search" placeholder="과목 또는 내용 검색..." />
     </div>
@@ -23,8 +86,9 @@
     <div id="subject-groups"></div>
   </main>
 
+  <!-- 퀴즈 보기: 상세 -->
   <main id="detail-view" hidden>
-    <button id="back-btn" class="back-btn">&larr; 목록으로</button>
+    <button id="detail-back-btn" class="back-btn">&larr; 목록으로</button>
     <div class="detail-meta">
       <div id="detail-subject" class="detail-subject"></div>
       <div id="detail-time" class="detail-time"></div>

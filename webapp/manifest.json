@@ -1,6 +1,6 @@
 {
-  "name": "학습 퀴즈 복습",
-  "short_name": "퀴즈복습",
+  "name": "지니야 공부하자",
+  "short_name": "지니야 공부하자",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
