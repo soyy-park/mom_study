@@ -252,6 +252,12 @@ Cloud Function 실행 → `pipeline/ocr_pipeline.py`·`quiz_parser.py` 와 동�
    ```
    최초 배포 시 "Eventarc 권한 전파 중" 오류가 나면 몇 분 후 재시도.
 
+> **`hosting,functions`를 한 명령으로 같이 배포하면 가끔 hosting 쪽이 실제로는
+> 안 올라갈 때가 있다**(배포는 성공했다고 뜨는데 `curl`로 확인하면 예전 파일이
+> 그대로 나옴). 웹앱을 고쳤으면 배포 후 꼭 `curl https://<주소>/app.js`로
+> 실제 반영됐는지 확인하고, 안 됐으면 `firebase deploy --only hosting`만
+> 한 번 더 단독으로 돌릴 것.
+
 > **Windows + Google Drive 폴더 주의**: Python 함수는 `functions/venv/` 가상환경이
 > 미리 만들어져 있어야 배포된다(`firebase deploy` 가 자동으로 못 만들어줌). 이 폴더가
 > Drive 동기화 폴더라 그 안에 직접 `python -m venv venv` 하면 느려지거나 깨질 수
