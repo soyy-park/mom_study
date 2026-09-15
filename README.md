@@ -31,7 +31,7 @@ run.cmd run python pipeline/ocr_pipeline.py
 
 | 보고 싶은 방식 | 명령 |
 |---|---|
-| **폰으로 보기** (추천) | `run.cmd run python pipeline/sync_pipeline.py` 실행 후 폰에서 https://mommy-stduy.web.app 접속 |
+| **폰으로 보기** (추천) | `run.cmd run python pipeline/sync_pipeline.py` 실행 후 폰에서 https://jini-study.web.app 접속 |
 | **PDF로 뽑아서 인쇄/공유** | `run.cmd run python pipeline/export_pdf.py` → `data/pdf/quiz_review.pdf` 생성 |
 
 폰 웹 주소는 한 번 접속한 뒤 브라우저 메뉴에서 **"홈 화면에 추가"**를 누르면 앱처럼
@@ -58,7 +58,7 @@ run.cmd run python pipeline/ocr_pipeline.py
 | 3. 구조화 파싱 (문제/보기/정답 분리) | `pipeline/quiz_parser.py` | ✅ |
 | 4. PDF 내보내기 | `pipeline/export_pdf.py` | ✅ |
 | 5. 클라우드 동기화 (Firestore) | `pipeline/sync_pipeline.py` | ✅ (Firebase 서비스 계정 키 필요) |
-| 6. 폰 PWA 로 다시보기 | `webapp/` | ✅ 배포됨 — https://mommy-stduy.web.app |
+| 6. 폰 PWA 로 다시보기 | `webapp/` | ✅ 배포됨 — https://jini-study.web.app |
 
 ## 개발 환경
 
@@ -205,7 +205,7 @@ Firebase Hosting 에 배포하면 그 주소를 폰 브라우저에서 열고 "�
 
    > `firebase login`이 대화형 터미널이 아닌 곳(예: 스크립트/에이전트로 실행)에서
    > 크래시하면(`UV_HANDLE_CLOSING` 등), PowerShell/터미널을 직접 열어 그 안에서
-   > 실행할 것 — 실제 배포 주소: **https://mommy-stduy.web.app**
+   > 실행할 것 — 실제 배포 주소: **https://jini-study.web.app**
 4. 이후 수정할 때마다 `firebase deploy` 로 재배포. 폰은 다음에 열 때 자동 반영된다.
 5. 로컬에서 미리 보려면: `webapp/` 안에서 `python -m http.server` 실행 후
    `http://localhost:8000` 접속. (Firestore 는 실제 프로젝트에 연결된다.)
