@@ -1,8 +1,12 @@
 # mom_study
 
-학습 영상 퀴즈를 **캡처 → OCR → PDF/클라우드 동기화 → 폰 PWA 로 다시보기**하는 파이프라인.
+학습 영상 퀴즈를 **캡처 → OCR → PDF/클라우드 동기화 → 폰 웹앱으로 보기·풀기·등록**하는
+파이프라인.
 
 ## 사용법 (매일 이렇게 쓰면 됩니다)
+
+**PC에서 강의 볼 때**: 아래 3단계. **폰만 있을 때**: PC 없이 https://jini-study.web.app
+의 "퀴즈 등록"에서 사진 찍어 올리면 자동으로 처리됨 (아래 7단계 참고).
 
 준비는 끝나 있다고 가정합니다 (`.env`에 키 설정 완료, `run.cmd sync` 한 번 실행됨).
 매번 아래 3단계만 반복하면 됩니다.
@@ -58,7 +62,8 @@ run.cmd run python pipeline/ocr_pipeline.py
 | 3. 구조화 파싱 (문제/보기/정답 분리) | `pipeline/quiz_parser.py` | ✅ |
 | 4. PDF 내보내기 | `pipeline/export_pdf.py` | ✅ |
 | 5. 클라우드 동기화 (Firestore) | `pipeline/sync_pipeline.py` | ✅ (Firebase 서비스 계정 키 필요) |
-| 6. 폰 PWA 로 다시보기 | `webapp/` | ✅ 배포됨 — https://jini-study.web.app |
+| 6. 폰 웹앱 (등록/풀기/보기) | `webapp/` | ✅ 배포됨 — https://jini-study.web.app |
+| 7. 폰 등록 자동 OCR 처리 | `functions/` | ✅ 배포됨 (Cloud Function, Blaze 요금제 필요) |
 
 ## 개발 환경
 
@@ -86,6 +91,10 @@ mom_study/
 │   ├── export_pdf.py      (4단계 PDF 내보내기)
 │   └── sync_pipeline.py   (5단계 Firestore 동기화)
 ├── webapp/            # 6단계 폰 PWA (Firebase Hosting 에 배포)
+├── functions/         # 7단계 Cloud Function (업로드 자동 OCR 처리)
+│   ├── main.py             (pipeline/ 로직 복제본)
+│   ├── requirements.txt
+│   └── venv/               (배포용 가상환경 - git 미포함, 직접 만들어야 함)
 ├── data/              # 실행 시 자동 생성되는 산출물 (git 미포함)
 │   ├── capture/            캡처 원본 PNG
 │   ├── ocr_text/           OCR 원문 txt
@@ -181,11 +190,17 @@ run.cmd run python pipeline/sync_pipeline.py --selftest   :: 키/네트워크 �
 > 복사해두고 `.env` 경로를 그 컴퓨터 기준으로 맞춰야 한다. `--dry-run`은 키 없이도
 > 되니 파싱 결과만 먼저 확인할 때 쓴다.
 
-## 6단계 — 폰에서 다시보기 (`webapp/`, PWA)
+## 6단계 — 폰 웹앱 (`webapp/`, PWA)
 
-과목/날짜별로 묶어서 목록으로 보여주고, 검색과 상세보기를 제공하는 정적 웹앱.
-Firebase Hosting 에 배포하면 그 주소를 폰 브라우저에서 열고 "홈 화면에 추가"로
-설치해서 앱처럼 쓸 수 있다.
+"지니야 공부하자" 랜딩 페이지 + 메뉴 3개로 구성된 정적 웹앱. Firebase Hosting 에
+배포하면 그 주소를 폰 브라우저에서 열고 "홈 화면에 추가"로 설치해서 앱처럼 쓸 수 있다.
+
+- **퀴즈 등록** — 과목명 입력 + 카메라 촬영/앨범 선택으로 사진을 바로 올림.
+  Storage 업로드를 감지한 Cloud Function(7단계)이 자동으로 OCR + 등록까지 처리 —
+  PC 없이 폰만으로 퀴즈가 생긴다.
+- **퀴즈 풀기** — 과목 선택 후 문제를 하나씩 풀며 정답/오답을 바로 확인, 끝나면 점수.
+  `answer_index` 가 있는(정답이 감지된) 문제만 출제 대상.
+- **퀴즈 보기** — 과목/날짜별 목록 + 검색 + 상세보기 (기존 기능).
 
 1. `webapp/firebase-config.js` 를 Firebase 콘솔의 웹 앱 SDK 설정값으로 채운다
    (이 값은 비밀키가 아니라 커밋해도 안전 — 접근 제어는 `firestore.rules` 가 담당).
@@ -210,8 +225,52 @@ Firebase Hosting 에 배포하면 그 주소를 폰 브라우저에서 열고 "�
 5. 로컬에서 미리 보려면: `webapp/` 안에서 `python -m http.server` 실행 후
    `http://localhost:8000` 접속. (Firestore 는 실제 프로젝트에 연결된다.)
 
+## 7단계 — 폰 등록 자동 처리 (`functions/`, Cloud Function)
+
+웹앱 "퀴즈 등록"이 올린 사진을 자동으로 OCR + 문제 등록까지 처리하는 서버 함수.
+Vision API 키를 웹페이지(클라이언트)에 두면 사이트 소스만 봐도 키가 노출되므로,
+서버에서만 실행되는 이 함수 뒤에 숨긴다.
+
+**흐름**: 폰에서 사진 업로드 → Storage `uploads/` 에 저장 → 업로드 이벤트로
+Cloud Function 실행 → `pipeline/ocr_pipeline.py`·`quiz_parser.py` 와 동일한 로직
+(Vision API 호출 + 파란 원 정답 감지 + 문제 구조화)으로 처리 → Firestore
+`questions` 컬렉션에 저장 → 몇 초~1분 뒤 앱에 자동으로 나타남.
+
+무료 요금제(Spark)는 Cloud Functions를 못 써서 **Blaze(종량제) 요금제 전환이
+필요하다** — 카드 등록은 하되 무료 한도(월 200만 회 호출 등) 안에서 쓰면 청구되지
+않는다. 개인용 규모(하루 20장)는 전혀 문제없는 수준.
+
+1. Blaze 요금제로 전환: [Firebase 콘솔](https://console.firebase.google.com/) →
+   프로젝트 설정 → 사용량 및 청구.
+2. Vision API 키를 Secret Manager 에 저장(코드에 안 넣음):
+   ```cmd
+   firebase functions:secrets:set GOOGLE_VISION_API_KEY
+   ```
+3. 배포:
+   ```cmd
+   firebase deploy --only functions
+   ```
+   최초 배포 시 "Eventarc 권한 전파 중" 오류가 나면 몇 분 후 재시도.
+
+> **Windows + Google Drive 폴더 주의**: Python 함수는 `functions/venv/` 가상환경이
+> 미리 만들어져 있어야 배포된다(`firebase deploy` 가 자동으로 못 만들어줌). 이 폴더가
+> Drive 동기화 폴더라 그 안에 직접 `python -m venv venv` 하면 느려지거나 깨질 수
+> 있고, 이 Drive는 정션/심볼릭 링크도 안 먹혀서(NTFS 아님) 바깥에 만들어 연결하는
+> 것도 안 된다. 그래서 `%LOCALAPPDATA%`에 먼저 만든 뒤 `robocopy` 로 `functions/venv`
+> 안에 복사해 넣는 방식을 쓴다:
+> ```cmd
+> uv venv %LOCALAPPDATA%\uv-envs\jini-study-functions --python 3.12
+> uv pip install -r functions\requirements.txt --python %LOCALAPPDATA%\uv-envs\jini-study-functions\Scripts\python.exe
+> robocopy %LOCALAPPDATA%\uv-envs\jini-study-functions functions\venv /E
+> ```
+
+`functions/main.py` 는 `pipeline/ocr_pipeline.py` · `pipeline/quiz_parser.py` 의
+로직을 Cloud Functions 런타임용으로 복제한 것이다 — 별도 패키징 없이 이 하나의
+소스 트리로 배포하기 위한 선택. **한쪽 로직을 바꾸면 다른 쪽도 같이 고칠 것.**
+
 ## 커밋하지 않는 것
 
-`.env`(비밀 키), `venv/` · `.venv/`, `data/`(캡처·OCR·PDF·동기화 상태 등 생성물 전부).
-Firebase 서비스 계정 키는 이 저장소 안에 두지 않는다(Drive 동기화 폴더이므로
-`.gitignore` 로도 Drive 업로드를 막을 수 없기 때문).
+`.env`(비밀 키), `venv/` · `.venv/` · `functions/venv/`, `data/`(캡처·OCR·PDF·동기화
+상태 등 생성물 전부). Firebase 서비스 계정 키는 이 저장소 안에 두지 않는다(Drive
+동기화 폴더이므로 `.gitignore` 로도 Drive 업로드를 막을 수 없기 때문). Vision API
+키는 `functions/` 쪽은 Secret Manager, `pipeline/` 쪽은 `.env` — 둘 다 git에 안 들어감.
