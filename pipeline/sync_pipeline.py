@@ -104,6 +104,7 @@ def record_to_docs(stem, record):
             "question": q.get("question", ""),
             "choices": q.get("choices", []),
             "answer_index": q.get("answer_index"),
+            "explanation": q.get("explanation"),
             "captured_at": captured_dt,
             "source_image": source_image,
             "ocr_backend": ocr_backend,
@@ -243,7 +244,8 @@ def selftest():
     # 파싱이 하나도 안 된 경우(국어)를 함께 검증한다.
     fixtures = [
         ("수학_20260910_090000.json", "수학", "2026-09-10T09:00:00", [
-            {"question": "다음 중 옳은 것은?", "choices": ["1번", "2번", "3번"], "answer_index": 2},
+            {"question": "다음 중 옳은 것은?", "choices": ["1번", "2번", "3번"], "answer_index": 2,
+             "explanation": "2번이 정답인 이유"},
         ]),
         ("영어_20260911_070000.json", "영어", "2026-09-11T07:00:00", [
             {"question": "빈칸에 알맞은 단어는?", "choices": ["apple", "banana"], "answer_index": 1},
@@ -277,7 +279,7 @@ def selftest():
     doc_count_ok = len(client.docs) == expected_docs
     subjects_ok = {doc["subject"] for doc in client.docs.values()} == {"수학", "영어"}
     fields_ok = all(
-        set(doc) == {"subject", "question", "choices", "answer_index",
+        set(doc) == {"subject", "question", "choices", "answer_index", "explanation",
                       "captured_at", "source_image", "ocr_backend", "synced_at"}
         for doc in client.docs.values()
     )
@@ -285,16 +287,22 @@ def selftest():
         isinstance(doc["captured_at"], datetime.datetime) and doc["captured_at"].tzinfo is not None
         for doc in client.docs.values()
     )
+    math1 = client.docs.get((COLLECTION, "수학_20260910_090000_q1"))
     q1 = client.docs.get((COLLECTION, "영어_20260911_070000_q1"))
     q2 = client.docs.get((COLLECTION, "영어_20260911_070000_q2"))
     multi_question_ok = (
         q1 is not None and q1["choices"] == ["apple", "banana"] and q1["answer_index"] == 1
         and q2 is not None and q2["answer_index"] is None
     )
+    explanation_ok = (
+        math1 is not None and math1["explanation"] == "2번이 정답인 이유"
+        and q1["explanation"] is None  # explanation 없는 문제는 None
+    )
     no_questions_case_ok = (COLLECTION, "국어_20260912_080000_q1") not in client.docs
     print(f"[3] 문서 검증      : count_ok={doc_count_ok}  subjects_ok={subjects_ok}  "
           f"fields_ok={fields_ok}  captured_at_is_aware_datetime={types_ok}  "
-          f"multi_question_ok={multi_question_ok}  no_questions_case_ok={no_questions_case_ok}")
+          f"multi_question_ok={multi_question_ok}  no_questions_case_ok={no_questions_case_ok}  "
+          f"explanation_ok={explanation_ok}")
 
     # 재실행 시 skip (국어 캡처도 "문제 없음"으로 처리 완료된 상태라 다시 안 건드림)
     summary2 = run_sync(json_dir=jdir, client=client, state_path=state_path, log=lambda m: None)
@@ -322,7 +330,7 @@ def selftest():
     all_ok = all([
         summary["synced"] == len(fixtures), summary["skipped"] == 0,
         doc_count_ok, subjects_ok, fields_ok, types_ok, multi_question_ok,
-        no_questions_case_ok, skip_ok, force_ok, fail_ok,
+        no_questions_case_ok, explanation_ok, skip_ok, force_ok, fail_ok,
     ])
     print(f"=== result: {'PASS' if all_ok else 'FAIL'} ===")
     return 0 if all_ok else 1

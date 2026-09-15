@@ -128,6 +128,13 @@ def _write_question(pdf, question):
         pdf.set_font("Malgun", "", 9)
         pdf.set_text_color(180, 120, 0)
         pdf.cell(0, 6, "(정답 표시가 감지되지 않았습니다)", new_x="LMARGIN", new_y="NEXT")
+
+    explanation = question.get("explanation")
+    if explanation:
+        pdf.set_font("Malgun", "", 9)
+        pdf.set_text_color(100, 100, 100)
+        pdf.multi_cell(0, 5.5, f"해설: {explanation}", new_x="LMARGIN", new_y="NEXT")
+
     pdf.ln(2)
 
 
@@ -169,7 +176,7 @@ def selftest():
          "미분과 적분의 관계", []),
         ("영어_20260911_070000.json", "영어", "2026-09-11T07:00:00", "(생략)", [
             {"question": "빈칸에 알맞은 단어는?", "choices": ["apple", "banana", "cherry"],
-             "answer_index": 2},
+             "answer_index": 2, "explanation": "banana가 문맥상 맞다"},
         ]),
     ]
     for name, subject, captured_at, text, questions in fixtures:
@@ -201,7 +208,8 @@ def selftest():
     extracted = "\n".join(page.extract_text() or "" for page in reader.pages)
     text_ok = all(
         needle in extracted
-        for needle in ["수학", "영어", "다음 중 옳은 것은?", "빈칸에 알맞은 단어는?", "banana"]
+        for needle in ["수학", "영어", "다음 중 옳은 것은?", "빈칸에 알맞은 단어는?", "banana",
+                       "해설: banana가 문맥상 맞다"]
     )
     print(f"[4] PDF 검증      : pages={len(reader.pages)}  page_count_ok={page_count_ok}  text_ok={text_ok}")
 
