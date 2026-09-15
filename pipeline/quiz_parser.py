@@ -17,8 +17,11 @@ answer_index 는 화면에 파란 원(정답 표시)이 없으면 None(단, "정
 import re
 import sys
 
-# 문제 줄: "1. 문제 내용" 형태. 보기 줄과 헷갈리지 않게 "숫자 + 마침표 + 공백"을 요구한다.
-QUESTION_RE = re.compile(r"^(\d{1,2})\.\s+(.+)", re.DOTALL)
+# 문제 줄: "1. 문제 내용" 형태. 보통 마침표 뒤에 공백이 있지만("1. 사회에..."),
+# OCR이 공백을 빼먹고 "5.이념적..." 처럼 붙여버리는 경우도 있어 그것도 인정한다.
+# 단, 공백이 없을 땐 바로 뒤가 숫자가 아니어야 한다("3.14" 같은 소수를 문제로
+# 오인하지 않기 위함) - 공백이 있으면("2. 10명 중...") 뒤에 숫자가 와도 그대로 인정.
+QUESTION_RE = re.compile(r"^(\d{1,2})\.(?:\s+|(?=\D))(.+)", re.DOTALL)
 
 # 보기 앞에 붙는 표시를 벗겨낸다: 원문자(①②..), "1)", "1.", 또는 OCR이 원문자를
 # 맨숫자로 잘못 읽은 "1 " 까지 포함.
@@ -235,8 +238,37 @@ def selftest():
 
     print(f"[5] OX 보정        : ox_ok={ox_ok}  ox_x_ok={ox_x_ok}  real_number_ok={real_number_ok}")
 
+    # 마침표 뒤 공백 없이 붙은 문제 번호("5.이념적...") - 실제 캡처(074701.jpg)에서
+    # 재현된 사례. 새 문제로 끊기지 않고 앞 문제의 보기로 잘못 붙던 버그.
+    glued_number = parse_questions([
+        {"text": "4. 문화의 차이로 사회문제가 발생할 수 있다", "is_answer": False},
+        {"text": "10", "is_answer": True},
+        {"text": "②X", "is_answer": False},
+        {"text": "5.이념적 대립이 강해지는 경우 사회문제가 발생할 가능성이 높다", "is_answer": False},
+        {"text": "10", "is_answer": True},
+        {"text": "②X", "is_answer": False},
+    ])
+    glued_ok = (
+        len(glued_number) == 2
+        and glued_number[0]["question"] == "문화의 차이로 사회문제가 발생할 수 있다"
+        and glued_number[0]["choices"] == ["O", "X"]
+        and glued_number[1]["question"] == "이념적 대립이 강해지는 경우 사회문제가 발생할 가능성이 높다"
+        and glued_number[1]["choices"] == ["O", "X"]
+    )
+    # "3.14" 같은 소수는 새 문제로 오인하면 안 된다.
+    decimal_ok = parse_questions([
+        {"text": "1. 원주율에 가장 가까운 값은?", "is_answer": False},
+        {"text": "① 3.14", "is_answer": True},
+        {"text": "② 2.71", "is_answer": False},
+    ])
+    decimal_ok = (
+        len(decimal_ok) == 1
+        and decimal_ok[0]["choices"] == ["3.14", "2.71"]
+    )
+    print(f"[6] 붙은 문제번호   : glued_ok={glued_ok}  decimal_ok={decimal_ok}")
+
     all_ok = (q1_ok and q2_ok and no_noise and none_ok and fallback_ok
-              and ox_ok and ox_x_ok and real_number_ok)
+              and ox_ok and ox_x_ok and real_number_ok and glued_ok and decimal_ok)
     print(f"=== result: {'PASS' if all_ok else 'FAIL'} ===")
     return 0 if all_ok else 1
 
