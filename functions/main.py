@@ -36,6 +36,8 @@ UPLOAD_PREFIX = "uploads/"
 QUESTION_RE = re.compile(r"^(\d{1,2})\.\s+(.+)", re.DOTALL)
 CHOICE_MARKER_RE = re.compile(r"^(?:[①②③④⑤⑥⑦⑧⑨⑩]|\d{1,2}[.)]?)\s+")
 ANSWER_PREFIX_RE = re.compile(r"^\[정답\]\s*")
+# "정답풀이" 버튼을 펼쳤을 때 나오는 해설 문단: 항상 "정답 N번 ..."으로 시작한다.
+EXPLANATION_RE = re.compile(r"^정답\s*(\d{1,2})번\s*(.*)", re.DOTALL)
 NOISE_EXACT = {"정답풀이", "해설", "해설보기", "정답 및 해설", "다음", "이전", "제출"}
 HANGUL_RE = re.compile(r"[가-힣]")
 
@@ -49,7 +51,12 @@ def parse_questions(paragraphs):
     current = None
 
     def finalize(q):
-        return {"question": q["question"], "choices": q["choices"], "answer_index": q["answer_index"]}
+        return {
+            "question": q["question"],
+            "choices": q["choices"],
+            "answer_index": q["answer_index"],
+            "explanation": q["explanation"],
+        }
 
     for para in paragraphs:
         raw = (para.get("text") or "").strip()
@@ -63,10 +70,18 @@ def parse_questions(paragraphs):
         if m:
             if current is not None:
                 questions.append(finalize(current))
-            current = {"question": m.group(2).strip(), "choices": [], "answer_index": None}
+            current = {"question": m.group(2).strip(), "choices": [], "answer_index": None,
+                       "explanation": None}
             continue
 
         if current is None:
+            continue
+
+        em = EXPLANATION_RE.match(text)
+        if em:
+            current["explanation"] = em.group(2).strip()
+            if current["answer_index"] is None:
+                current["answer_index"] = int(em.group(1))
             continue
 
         choice_text = CHOICE_MARKER_RE.sub("", text).strip()
@@ -224,6 +239,7 @@ def on_quiz_upload(event: storage_fn.CloudEvent) -> None:
             "question": q["question"],
             "choices": q["choices"],
             "answer_index": q["answer_index"],
+            "explanation": q["explanation"],
             "captured_at": captured_at,
             "source_image": name,
             "ocr_backend": "google",
