@@ -98,6 +98,7 @@ const detailTimeEl = document.getElementById("detail-time");
 const detailQuestionEl = document.getElementById("detail-question");
 const detailChoicesEl = document.getElementById("detail-choices");
 const detailNoAnswerEl = document.getElementById("detail-no-answer");
+const detailExplanationEl = document.getElementById("detail-explanation");
 
 function render(filterText) {
   if (!firebaseConfig.projectId) {
@@ -163,6 +164,8 @@ function showDetail(item) {
   detailQuestionEl.textContent = item.question || "(문제 없음)";
   renderChoiceList(detailChoicesEl, item);
   detailNoAnswerEl.hidden = item.answer_index != null;
+  detailExplanationEl.hidden = !item.explanation;
+  detailExplanationEl.textContent = item.explanation ? `해설: ${item.explanation}` : "";
   showView("detail-view");
 }
 
@@ -180,6 +183,7 @@ const solveProgressEl = document.getElementById("solve-progress");
 const solveQuestionEl = document.getElementById("solve-question");
 const solveChoicesEl = document.getElementById("solve-choices");
 const solveFeedbackEl = document.getElementById("solve-feedback");
+const solveExplanationEl = document.getElementById("solve-explanation");
 const solveNextBtn = document.getElementById("solve-next-btn");
 const solveScoreEl = document.getElementById("solve-score");
 const solveRestartBtn = document.getElementById("solve-restart-btn");
@@ -252,6 +256,7 @@ function renderSolveQuestion() {
   solveProgressEl.textContent = `${solveIndex + 1} / ${solveQueue.length}  ·  ${item.subject || "무제"}`;
   solveQuestionEl.textContent = item.question || "(문제 없음)";
   solveFeedbackEl.hidden = true;
+  solveExplanationEl.hidden = true;
   solveNextBtn.hidden = true;
 
   solveChoicesEl.innerHTML = "";
@@ -280,6 +285,12 @@ function answerSolve(pickedIndex, pickedBtn) {
   solveFeedbackEl.hidden = false;
   solveFeedbackEl.textContent = correct ? "정답입니다! 🎉" : "아쉬워요, 다시 확인해보세요.";
   solveFeedbackEl.className = "solve-feedback " + (correct ? "correct" : "wrong");
+
+  if (item.explanation) {
+    solveExplanationEl.hidden = false;
+    solveExplanationEl.textContent = `해설: ${item.explanation}`;
+  }
+
   solveNextBtn.hidden = false;
 }
 
