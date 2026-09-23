@@ -25,6 +25,11 @@ document.getElementById("profile-avatar").textContent = profileConfig.name.slice
 // --------------------------------------------------------------------------- #
 const VIEW_IDS = ["home-view", "register-view", "solve-view", "browse-view"];
 
+// 화면마다 URL 해시(#register, #solve, #browse)를 붙여서 브라우저 뒤로/앞으로
+// 가기 버튼과 새로고침이 실제로 동작하게 한다(전에는 전부 같은 주소라 안 먹혔음).
+const HASH_TO_VIEW = { "": "home-view", register: "register-view", solve: "solve-view", browse: "browse-view" };
+const VIEW_TO_HASH = { "home-view": "", "register-view": "register", "solve-view": "solve", "browse-view": "browse" };
+
 function showView(id) {
   for (const v of VIEW_IDS) {
     document.getElementById(v).hidden = v !== id;
@@ -32,15 +37,33 @@ function showView(id) {
   window.scrollTo(0, 0);
 }
 
-document.querySelectorAll(".menu-card").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const target = btn.dataset.view;
-    showView(target);
-    if (target === "browse-view") render();
-    if (target === "solve-view") renderSolveSetup();
-  });
+// 실제 화면 전환(DOM 토글 + 화면별 초기화). URL은 이미 맞춰져 있다고 가정한다.
+function applyView(id) {
+  showView(id);
+  if (id === "browse-view") render();
+  if (id === "solve-view") renderSolveSetup();
+}
+
+// 사용자 조작(메뉴 클릭 등)으로 화면을 옮길 때는 이걸 호출한다 — 해시를 바꾸고,
+// 그 결과로 발생하는 hashchange 이벤트가 applyView를 실행한다.
+function navigateTo(id) {
+  const hash = VIEW_TO_HASH[id] ?? "";
+  if (location.hash.replace(/^#/, "") === hash) {
+    applyView(id);
+  } else {
+    location.hash = hash;
+  }
+}
+
+window.addEventListener("hashchange", () => {
+  const id = HASH_TO_VIEW[location.hash.replace(/^#/, "")] || "home-view";
+  applyView(id);
 });
-document.getElementById("brand-home-btn").addEventListener("click", () => showView("home-view"));
+
+document.querySelectorAll(".menu-card").forEach((btn) => {
+  btn.addEventListener("click", () => navigateTo(btn.dataset.view));
+});
+document.getElementById("brand-home-btn").addEventListener("click", () => navigateTo("home-view"));
 
 // --------------------------------------------------------------------------- #
 // Firebase 초기화
@@ -84,6 +107,10 @@ async function loadQuestions() {
   }
   homeQuizCountEl.textContent = `누적 ${allQuestions.length}문제 보관`;
   populateBrowseFilters();
+  // 새로고침으로 #browse/#solve에 바로 들어온 경우, 이 데이터 로딩이 끝나기 전에
+  // 이미 한 번 렌더링됐을 수 있으므로 최신 데이터로 다시 그린다.
+  if (!document.getElementById("browse-view").hidden) render();
+  if (!document.getElementById("solve-view").hidden) renderSolveSetup();
 }
 
 // --------------------------------------------------------------------------- #
@@ -578,7 +605,7 @@ solveResetBtn.addEventListener("click", () => {
   updateSolveSetupSummary();
 });
 
-solveSetupBackBtn.addEventListener("click", () => showView("home-view"));
+solveSetupBackBtn.addEventListener("click", () => navigateTo("home-view"));
 
 solveStartBtn.addEventListener("click", () => {
   const pool = filteredSolvableQuestions(currentSetupFilters());
@@ -1046,4 +1073,7 @@ captureConfirmBtn.addEventListener("click", () => {
 });
 
 // --------------------------------------------------------------------------- #
+// 새로고침/북마크로 바로 들어왔을 때도 지금 주소(#register, #solve, #browse)에
+// 맞는 화면이 뜨도록, 첫 로드 시 한 번 현재 해시를 그대로 적용한다.
+applyView(HASH_TO_VIEW[location.hash.replace(/^#/, "")] || "home-view");
 loadQuestions();
