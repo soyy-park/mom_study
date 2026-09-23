@@ -10,6 +10,19 @@
 
 * { box-sizing: border-box; }
 
+/* Tailwind의 flex/grid 유틸리티가 hidden 속성보다 우선 적용되는 걸 방지
+   (같은 태그에 display를 지정하는 클래스와 hidden 속성이 같이 있으면,
+   나중에 로드되는 Tailwind 쪽이 이겨서 hidden이 무시돼버린다) */
+[hidden] { display: none !important; }
+
+/* 학년/학기 숫자 입력에서 스핀 화살표 제거(숫자만 직접 입력) */
+input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 body {
   margin: 0;
   background: var(--bg);
@@ -18,159 +31,30 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: var(--accent);
-  color: white;
-  padding: 14px 16px calc(14px + env(safe-area-inset-top)) 16px;
-  padding-top: max(14px, env(safe-area-inset-top));
+/* Google Fonts에서 로드하는 Material Symbols 아이콘 폰트를 실제 아이콘으로 렌더링하기 위한 필수 규칙
+   (Google이 배포하는 표준 스니펫 — 이게 없으면 "photo_camera" 같은 글자가 그대로 보인다) */
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: "liga";
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
 }
 
-.topbar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+/* 상단 헤더는 fixed(h-20=80px)이므로 모든 화면 본문에 그만큼 위쪽 여백이 필요 */
+main { padding: 92px 12px 32px 12px; max-width: 640px; margin: 0 auto; }
 
-.topbar h1 {
-  margin: 0;
-  font-size: 18px;
-}
-
-.topbar .back-btn {
-  color: white;
-  margin-bottom: 0;
-  padding: 4px 0;
-  flex-shrink: 0;
-}
-
-main { padding: 12px 12px 32px 12px; max-width: 640px; margin: 0 auto; }
-
-.search-row { margin-bottom: 12px; }
-
-#search-input {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 15px;
-  background: var(--card);
-  color: var(--text);
-}
-
-.status { color: var(--muted); font-size: 13px; padding: 8px 2px; }
-
-.subject-group { margin-bottom: 18px; }
-
-.subject-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--muted);
-  margin: 0 0 6px 4px;
-}
-
-.capture-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px 14px;
-  margin-bottom: 8px;
-  cursor: pointer;
-}
-
-.capture-card:active { background: #f1f5f9; }
-
-.capture-time { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
-
-.capture-preview {
-  font-size: 14px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.back-btn {
-  background: none;
-  border: none;
-  color: var(--accent);
-  font-size: 15px;
-  padding: 8px 0;
-  margin-bottom: 8px;
-}
-
-.detail-meta { margin-bottom: 10px; }
-.detail-subject { font-size: 18px; font-weight: 700; }
-.detail-time { font-size: 13px; color: var(--muted); }
-
-.detail-question {
-  font-size: 17px;
-  font-weight: 700;
-  line-height: 1.5;
-  margin-bottom: 14px;
-}
-
-.detail-choices {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.choice {
-  counter-increment: choice-num;
-  font-size: 15px;
-  line-height: 1.5;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 14px;
-}
-
-.detail-choices { counter-reset: choice-num; }
-
-.choice::before {
-  content: counter(choice-num) ") ";
-  color: var(--muted);
-  font-weight: 700;
-}
-
-.choice.correct {
-  color: #1565c0;
-  font-weight: 700;
-  border-color: #1565c0;
-  background: #e8f0fe;
-}
-
-.choice.correct::before { color: #1565c0; }
-
-.no-answer {
-  margin-top: 12px;
-  font-size: 13px;
-  color: #b26a00;
-}
-
-.explanation {
-  margin-top: 14px;
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--muted);
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 14px;
-  white-space: pre-wrap;
-}
-
-@media (prefers-color-scheme: dark) {
-  .choice.correct { color: #64b5f6; border-color: #64b5f6; background: #12213a; }
-  .choice.correct::before { color: #64b5f6; }
-}
+/* 홈 화면은 자체 Tailwind 레이아웃(max-w-5xl 등)이 폭/중앙정렬을 담당하므로 기본 제약을 해제 */
+#home-view { max-width: none; margin: 0; padding-left: 0; padding-right: 0; }
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -181,17 +65,9 @@ main { padding: 12px 12px 32px 12px; max-width: 640px; margin: 0 auto; }
     --muted: #94a3b8;
     --border: #24304a;
   }
-  #search-input { color: var(--text); }
 }
 
-/* 홈: 랜딩 메뉴 */
-.home-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding-top: 8px;
-}
-
+/* 랜딩 메뉴 버튼 (퀴즈 풀기의 과목 선택 목록에서 재사용) */
 .menu-card {
   display: flex;
   flex-direction: column;
@@ -209,48 +85,11 @@ main { padding: 12px 12px 32px 12px; max-width: 640px; margin: 0 auto; }
 
 .menu-card:active { background: #f1f5f9; }
 
-.menu-icon { font-size: 28px; }
-
 .menu-label { font-size: 17px; font-weight: 700; color: var(--text); }
 
 .menu-desc { font-size: 13px; color: var(--muted); }
 
 /* 퀴즈 등록 */
-.register-row { margin-bottom: 14px; }
-
-#register-subject {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 15px;
-  background: var(--card);
-  color: var(--text);
-}
-
-.register-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.register-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  justify-content: center;
-  background: var(--accent);
-  color: white;
-  border-radius: 10px;
-  padding: 14px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.register-btn:active { opacity: 0.85; }
-
 .register-queue {
   list-style: none;
   margin: 0;
@@ -273,60 +112,6 @@ main { padding: 12px 12px 32px 12px; max-width: 640px; margin: 0 auto; }
 .register-queue-item.failed { color: #c62828; }
 
 /* 퀴즈 풀기 */
-.solve-subject-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.solve-subject-btn {
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
-}
-
-.solve-subject-btn:disabled { opacity: 0.5; cursor: default; }
-
-.solve-progress { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
-
-.solve-choices .choice-btn {
-  width: 100%;
-  text-align: left;
-  font-family: inherit;
-  font-size: 15px;
-  line-height: 1.5;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 14px;
-  color: var(--text);
-  cursor: pointer;
-}
-
-.solve-choices li { list-style: none; margin-bottom: 8px; }
-
-.solve-choices .choice-btn.correct {
-  color: #1565c0;
-  font-weight: 700;
-  border-color: #1565c0;
-  background: #e8f0fe;
-}
-
-.solve-choices .choice-btn.wrong {
-  color: #c62828;
-  font-weight: 700;
-  border-color: #c62828;
-  background: #fdecea;
-}
-
-.solve-choices .choice-btn:disabled { cursor: default; }
-
-.solve-feedback { font-size: 15px; font-weight: 700; margin: 10px 0; }
-.solve-feedback.correct { color: #1565c0; }
-.solve-feedback.wrong { color: #c62828; }
-
 .solve-score {
   font-size: 20px;
   font-weight: 700;
@@ -351,8 +136,4 @@ main { padding: 12px 12px 32px 12px; max-width: 640px; margin: 0 auto; }
 
 @media (prefers-color-scheme: dark) {
   .menu-card:active { background: #1b263b; }
-  .solve-choices .choice-btn.correct { color: #64b5f6; border-color: #64b5f6; background: #12213a; }
-  .solve-choices .choice-btn.wrong { color: #ef9a9a; border-color: #ef9a9a; background: #3a1414; }
-  .solve-feedback.correct { color: #64b5f6; }
-  .solve-feedback.wrong { color: #ef9a9a; }
 }

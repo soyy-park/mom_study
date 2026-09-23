@@ -5,11 +5,15 @@ const SHELL_FILES = [
   "./style.css",
   "./app.js",
   "./firebase-config.js",
+  "./profile-config.js",
   "./manifest.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
 ];
 const SDK_PREFIX = "https://www.gstatic.com/firebasejs/";
+// 홈 화면 목업이 쓰는 CDN (Tailwind + 구글 폰트) — 버전 고정이 아니라서 캐시 우선이 아니라
+// 네트워크 우선으로 캐싱해야 업데이트가 반영되면서도 오프라인일 때 마지막 버전을 쓸 수 있다.
+const NETWORK_FIRST_HOSTS = ["cdn.tailwindcss.com", "fonts.googleapis.com", "fonts.gstatic.com"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_FILES)));
@@ -59,6 +63,8 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(networkFirst(request));
   } else if (request.url.startsWith(SDK_PREFIX)) {
     event.respondWith(cacheFirst(request));
+  } else if (NETWORK_FIRST_HOSTS.includes(url.hostname)) {
+    event.respondWith(networkFirst(request));
   }
   // 그 외(Firestore 통신 등)는 건드리지 않는다 — SDK 자체 오프라인 캐시가 담당.
 });
