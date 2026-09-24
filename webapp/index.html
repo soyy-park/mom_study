@@ -235,9 +235,14 @@ tailwind.config = {
               </div>
               <div class="pl-5 sm:pl-7">
                 <div class="flex items-start justify-between pb-4">
-                  <div>
-                    <h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">퀴즈 등록</h2>
-                    <p class="font-body-md text-body-md text-on-surface-variant">문제를 등록하고 차근차근 익혀보세요.</p>
+                  <div class="flex items-center gap-2">
+                    <button type="button" id="register-back-btn" aria-label="홈으로 돌아가기" class="w-10 h-10 rounded-2xl bg-surface-container hover:bg-surface-container-high text-on-surface-variant flex items-center justify-center transition-transform active:scale-95 shadow-sm shrink-0">
+                      <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+                    </button>
+                    <div>
+                      <h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">퀴즈 등록</h2>
+                      <p class="font-body-md text-body-md text-on-surface-variant">문제를 등록하고 차근차근 익혀보세요.</p>
+                    </div>
                   </div>
                 </div>
                 <div class="bg-surface-container-low rounded-xl p-3 sm:p-3.5 mb-6 flex items-center gap-3">
@@ -322,6 +327,17 @@ tailwind.config = {
                         <input type="file" accept="image/*" multiple id="gallery-input" hidden />
                       </label>
                     </div>
+
+                    <div id="register-preview-panel" class="mt-4" hidden>
+                      <ul id="register-preview-list" class="flex flex-col gap-2.5"></ul>
+                    </div>
+                    <div class="pt-4">
+                      <button type="button" id="register-submit-btn" disabled class="w-full h-[60px] rounded-2xl bg-primary hover:bg-primary-container disabled:hover:bg-primary text-on-primary hover:text-on-primary-container font-label-lg text-label-lg font-bold shadow-lg shadow-primary/20 disabled:shadow-none disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2.5 active:translate-y-0.5 transition-all">
+                        <span class="material-symbols-outlined text-[26px]" id="register-submit-icon">document_scanner</span>
+                        <span id="register-submit-label">문제 자동 인식 및 등록하기</span>
+                      </button>
+                    </div>
+
                     <div class="mt-4 space-y-2">
                       <div id="register-status" class="status"></div>
                       <ul id="register-queue" class="register-queue"></ul>
@@ -363,7 +379,7 @@ tailwind.config = {
                 <button type="button" id="solve-setup-back-btn" aria-label="이전 화면으로 돌아가기" class="w-10 h-10 rounded-2xl bg-surface-container hover:bg-surface-container-high text-on-surface-variant flex items-center justify-center transition-transform active:scale-95 shadow-sm">
                   <span class="material-symbols-outlined text-[20px]">arrow_back</span>
                 </button>
-                <h1 class="font-headline-lg text-[25px] text-on-surface tracking-tight">퀴즈 설정</h1>
+                <h1 class="font-headline-md text-headline-md text-on-surface tracking-tight">퀴즈 설정</h1>
               </div>
               <button type="button" id="solve-reset-btn" class="inline-flex items-center gap-1.5 px-3 h-8 rounded-xl bg-surface-container hover:bg-surface-container-high text-secondary hover:text-on-surface transition-all font-label-sm text-label-sm font-medium shadow-sm self-start sm:self-auto">
                 <span class="material-symbols-outlined text-[14px]">restart_alt</span>
@@ -577,10 +593,15 @@ tailwind.config = {
     <div class="max-w-2xl mx-auto w-full px-3 sm:px-0">
       <div class="relative bg-surface-container-low rounded-t-2xl shadow-sm pt-4 pb-3 px-space-md sm:px-space-lg flex flex-col gap-space-sm">
         <div class="flex items-center justify-between">
-          <h1 class="font-headline-md text-headline-md text-on-surface tracking-tight flex items-center gap-2">
-            모아보기
-            <span class="font-label-sm text-label-sm text-secondary font-medium bg-secondary-container/60 px-2 py-0.5 rounded-full">문제 보관함</span>
-          </h1>
+          <div class="flex items-center gap-2">
+            <button type="button" id="browse-back-btn" aria-label="홈으로 돌아가기" class="w-10 h-10 rounded-2xl bg-surface-container hover:bg-surface-container-high text-on-surface-variant flex items-center justify-center transition-transform active:scale-95 shadow-sm shrink-0">
+              <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+            </button>
+            <h1 class="font-headline-md text-headline-md text-on-surface tracking-tight flex items-center gap-2">
+              모아보기
+              <span class="font-label-sm text-label-sm text-secondary font-medium bg-secondary-container/60 px-2 py-0.5 rounded-full">문제 보관함</span>
+            </h1>
+          </div>
           <button id="browse-search-toggle-btn" type="button" aria-label="문제 검색창 열기" class="w-11 h-11 rounded-xl bg-surface-container hover:bg-surface-container-highest active:scale-95 flex items-center justify-center text-on-surface transition-all">
             <span class="material-symbols-outlined text-[24px]">search</span>
           </button>

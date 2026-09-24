@@ -217,6 +217,47 @@ def parse_capture_name(filename):
     return subject, captured_at
 
 
+# 예전 방식(웹앱이 subject/grade/semester/exam_type을 한 문자열로 합쳐서 파일명에
+# 박아넣던 것 - 지금은 customMetadata로 따로 보냄) 호환용. webapp/app.js의
+# parseSubjectMeta()와 동일한 규칙이니, 여기 규칙을 바꾸면 그쪽도 같이 고칠 것.
+_GRADE_SEMESTER_RE = re.compile(r"^(\d+)학년(\d+)학기$")
+_EXAM_TYPE_RE = re.compile(r"^(중간고사|기말고사)$")
+
+
+def _parse_subject_string(subject):
+    tokens = (subject or "무제").strip().split()
+    grade = semester = exam_type = None
+    while len(tokens) > 1:
+        last = tokens[-1]
+        gs = _GRADE_SEMESTER_RE.match(last)
+        if gs:
+            grade, semester = gs.group(1), gs.group(2)
+            tokens.pop()
+            continue
+        if _EXAM_TYPE_RE.match(last):
+            exam_type = last
+            tokens.pop()
+            continue
+        break
+    return " ".join(tokens), grade, semester, exam_type
+
+
+def resolve_registration_meta(name, metadata):
+    """웹앱 업로드가 customMetadata로 넘긴 subject/grade/semester/exam_type을
+    우선 쓴다. 로컬 파이프라인 등 customMetadata가 없는 업로드는 예전처럼
+    파일명(subject 부분)에서 유추한다."""
+    metadata = metadata or {}
+    if metadata.get("subject"):
+        return (
+            metadata.get("subject") or "무제",
+            metadata.get("grade") or None,
+            metadata.get("semester") or None,
+            metadata.get("exam_type") or None,
+        )
+    fallback_subject, _ = parse_capture_name(name)
+    return _parse_subject_string(fallback_subject)
+
+
 # --------------------------------------------------------------------------- #
 # Storage 트리거: uploads/ 에 새 이미지가 올라오면 실행.
 # 버킷이 us-east1 에 있어서 함수도 같은 리전이어야 트리거가 붙는다.
@@ -240,7 +281,8 @@ def on_quiz_upload(event: storage_fn.CloudEvent) -> None:
     blob = bucket.blob(name)
     image_bytes = blob.download_as_bytes()
 
-    subject, captured_at = parse_capture_name(name)
+    _, captured_at = parse_capture_name(name)
+    subject, grade, semester, exam_type = resolve_registration_meta(name, data.metadata)
 
     try:
         paragraphs = recognize(image_bytes, GOOGLE_VISION_API_KEY.value)
@@ -259,6 +301,9 @@ def on_quiz_upload(event: storage_fn.CloudEvent) -> None:
     for i, q in enumerate(questions, start=1):
         doc = {
             "subject": subject or "무제",
+            "grade": grade,
+            "semester": semester,
+            "exam_type": exam_type,
             "question": q["question"],
             "choices": q["choices"],
             "answer_index": q["answer_index"],

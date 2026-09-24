@@ -64,6 +64,8 @@ document.querySelectorAll(".menu-card").forEach((btn) => {
   btn.addEventListener("click", () => navigateTo(btn.dataset.view));
 });
 document.getElementById("brand-home-btn").addEventListener("click", () => navigateTo("home-view"));
+document.getElementById("register-back-btn").addEventListener("click", () => navigateTo("home-view"));
+document.getElementById("browse-back-btn").addEventListener("click", () => navigateTo("home-view"));
 
 // --------------------------------------------------------------------------- #
 // Firebase 초기화
@@ -142,7 +144,7 @@ function populateBrowseFilters() {
   const examTypes = new Set();
   const subjectCounts = new Map();
   for (const q of allQuestions) {
-    const meta = parseSubjectMeta(q.subject);
+    const meta = parseSubjectMeta(q);
     if (meta.grade) grades.add(meta.grade);
     if (meta.semester) semesters.add(meta.semester);
     if (meta.examType) examTypes.add(meta.examType);
@@ -159,7 +161,7 @@ function populateBrowseFilters() {
 }
 
 function browseCard(item) {
-  const meta = parseSubjectMeta(item.subject);
+  const meta = parseSubjectMeta(item);
   const gradeSemester = meta.grade && meta.semester ? `${meta.grade}학년 ${meta.semester}학기` : "";
   const hasAnswer = item.answer_index != null;
   const badges = [`<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-[12px] font-medium">${escapeHtml(meta.baseSubject)}</span>`];
@@ -207,7 +209,7 @@ function render() {
   };
 
   const filtered = allQuestions.filter((q) => {
-    if (!matchesSetupFilters(parseSubjectMeta(q.subject), filters)) return false;
+    if (!matchesSetupFilters(parseSubjectMeta(q), filters)) return false;
     if (!needle) return true;
     return (
       (q.subject || "").toLowerCase().includes(needle) ||
@@ -474,13 +476,22 @@ function solvableQuestions() {
   return allQuestions.filter((q) => q.answer_index != null && (q.choices || []).length > 0);
 }
 
-// 등록 화면(currentSubjectLabel())이 "정보처리기사 3학년2학기 중간고사"처럼
-// 과목/학년학기/시험종류를 한 문자열로 합쳐서 저장하므로, 필터링을 위해 여기서 다시 분리한다.
+// 등록 시 grade/semester/exam_type을 Firestore에 별도 필드로 저장한 문서는 그걸
+// 그대로 쓰고, 그 필드가 없는 예전 문서(subject에 "정보처리기사 3학년2학기 중간고사"
+// 처럼 다 합쳐서 저장했던 것들)만 문자열을 정규식으로 분리해서 호환 처리한다.
 const GRADE_SEMESTER_RE = /^(\d+)학년(\d+)학기$/;
 const EXAM_TYPE_RE = /^(중간고사|기말고사)$/;
 
-function parseSubjectMeta(subject) {
-  const tokens = (subject || "무제").trim().split(/\s+/);
+function parseSubjectMeta(item) {
+  if (item.grade || item.semester || item.exam_type) {
+    return {
+      baseSubject: (item.subject || "무제").trim(),
+      grade: item.grade != null ? String(item.grade) : null,
+      semester: item.semester != null ? String(item.semester) : null,
+      examType: item.exam_type || null,
+    };
+  }
+  const tokens = (item.subject || "무제").trim().split(/\s+/);
   let grade = null;
   let semester = null;
   let examType = null;
@@ -523,7 +534,7 @@ function matchesSetupFilters(meta, filters) {
 }
 
 function filteredSolvableQuestions(filters) {
-  return solvableQuestions().filter((q) => matchesSetupFilters(parseSubjectMeta(q.subject), filters));
+  return solvableQuestions().filter((q) => matchesSetupFilters(parseSubjectMeta(q), filters));
 }
 
 function renderSolveSetup() {
@@ -546,7 +557,7 @@ function renderSolveSetup() {
   const examTypes = new Set();
   const subjectCounts = new Map();
   pool.forEach((q) => {
-    const meta = parseSubjectMeta(q.subject);
+    const meta = parseSubjectMeta(q);
     if (meta.grade) grades.add(meta.grade);
     if (meta.semester) semesters.add(meta.semester);
     if (meta.examType) examTypes.add(meta.examType);
@@ -842,6 +853,11 @@ const btnCamera = document.getElementById("btn-camera");
 const galleryInput = document.getElementById("gallery-input");
 const registerStatusEl = document.getElementById("register-status");
 const registerQueueEl = document.getElementById("register-queue");
+const registerPreviewPanelEl = document.getElementById("register-preview-panel");
+const registerPreviewListEl = document.getElementById("register-preview-list");
+const registerSubmitBtn = document.getElementById("register-submit-btn");
+const registerSubmitIconEl = document.getElementById("register-submit-icon");
+const registerSubmitLabelEl = document.getElementById("register-submit-label");
 
 function sanitizeSubject(text) {
   const trimmed = (text || "").trim();
@@ -897,13 +913,17 @@ subjectSelect.addEventListener("change", () => {
   if (subjectSelect.value === "custom") openAddSubjectModal();
 });
 
-function currentSubjectLabel() {
-  const subjectText = subjectSelect.options[subjectSelect.selectedIndex]?.textContent || "";
+// 등록 화면에서 지금 골라둔 학년/학기/시험/과목을 읽는다. subject/grade/semester/
+// examType은 Storage 업로드 시 customMetadata로 그대로 넘겨서 Cloud Function이
+// 문자열을 다시 분석할 필요 없이 Firestore에 별도 필드로 저장하게 한다.
+function currentRegisterMeta() {
+  const subject = subjectSelect.options[subjectSelect.selectedIndex]?.textContent || "무제";
   const grade = gradeInput.value.trim();
   const semester = semesterInput.value.trim();
   const examType = document.querySelector('input[name="exam_type"]:checked')?.value === "final" ? "기말고사" : "중간고사";
   const gradeSemester = grade && semester ? `${grade}학년${semester}학기` : "";
-  return [subjectText, gradeSemester, examType].filter(Boolean).join(" ");
+  const label = [subject, gradeSemester, examType].filter(Boolean).join(" ");
+  return { subject, grade, semester, examType, label };
 }
 
 function timestampName(offsetSeconds) {
@@ -923,13 +943,20 @@ function addQueueItem(label) {
 }
 
 async function uploadPhoto(file, offsetSeconds) {
-  const subject = sanitizeSubject(currentSubjectLabel());
+  const meta = currentRegisterMeta();
+  const filenameLabel = sanitizeSubject(meta.label);
   const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-  const filename = `${subject}_${timestampName(offsetSeconds)}.${ext}`;
+  const filename = `${filenameLabel}_${timestampName(offsetSeconds)}.${ext}`;
   const item = addQueueItem(`${filename} - 업로드 중...`);
   try {
     await uploadBytes(ref(storage, `uploads/${filename}`), file, {
       contentType: file.type || "image/jpeg",
+      customMetadata: {
+        subject: meta.subject,
+        grade: meta.grade,
+        semester: meta.semester,
+        exam_type: meta.examType,
+      },
     });
     item.textContent = `${filename} - 업로드 완료! 잠시 후 [퀴즈 보기]에 나타납니다.`;
     item.classList.add("done");
@@ -947,8 +974,82 @@ async function handleFiles(fileList) {
   registerStatusEl.textContent = "";
 }
 
+// 사진은 고르는 즉시 올리지 않고 미리보기로 모아뒀다가, [등록하기]를 눌러야 업로드된다.
+let pendingFiles = [];
+
+function setRegisterSubmitState(icon, label, spinning) {
+  registerSubmitIconEl.textContent = icon;
+  registerSubmitIconEl.classList.toggle("animate-spin", !!spinning);
+  registerSubmitLabelEl.textContent = label;
+}
+
+function idleSubmitLabel() {
+  return pendingFiles.length > 0 ? `문제 자동 인식 및 등록하기` : "문제 자동 인식 및 등록하기";
+}
+
+function renderPendingPreview() {
+  registerPreviewPanelEl.hidden = pendingFiles.length === 0;
+  registerSubmitBtn.disabled = pendingFiles.length === 0;
+  setRegisterSubmitState("document_scanner", idleSubmitLabel(), false);
+  registerPreviewListEl.innerHTML = "";
+  pendingFiles.forEach((file, i) => {
+    const url = URL.createObjectURL(file);
+    const li = document.createElement("li");
+    li.className = "p-3.5 bg-surface-container-low rounded-xl flex items-center justify-between gap-3 shadow-inner";
+    li.innerHTML = `
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-12 h-12 rounded-lg overflow-hidden bg-surface-container-high shrink-0">
+          <img src="${url}" class="w-full h-full object-cover" alt="" />
+        </div>
+        <div class="min-w-0">
+          <span class="font-label-md text-label-md text-on-surface font-semibold block truncate">${escapeHtml(file.name)}</span>
+          <span class="font-label-sm text-label-sm text-primary font-medium flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px]">check_circle</span>등록 준비 완료
+          </span>
+        </div>
+      </div>
+      <button type="button" class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-error-container/40 transition-colors shrink-0" title="빼기">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    `;
+    li.querySelector("button").addEventListener("click", () => {
+      URL.revokeObjectURL(url);
+      pendingFiles.splice(i, 1);
+      renderPendingPreview();
+    });
+    registerPreviewListEl.appendChild(li);
+  });
+}
+
+function addPendingFiles(fileList) {
+  pendingFiles.push(...fileList);
+  renderPendingPreview();
+}
+
+registerSubmitBtn.addEventListener("click", async () => {
+  if (pendingFiles.length === 0) return;
+  const files = pendingFiles;
+  pendingFiles = [];
+  // 미리보기 목록만 비우고 패널(=버튼이 들어있는 컨테이너)은 계속 보이게 둔다 -
+  // 패널 자체를 hidden 처리하면 그 안의 버튼까지 같이 사라져서 진행 상태가 안 보인다.
+  registerPreviewListEl.innerHTML = "";
+
+  registerSubmitBtn.classList.add("pointer-events-none", "opacity-90");
+  setRegisterSubmitState("progress_activity", "사진을 업로드하는 중...", true);
+  await handleFiles(files);
+
+  registerSubmitBtn.classList.remove("bg-primary");
+  registerSubmitBtn.classList.add("bg-tertiary", "text-on-tertiary");
+  setRegisterSubmitState("task_alt", "업로드 완료! 잠시 후 문제로 등록돼요", false);
+  setTimeout(() => {
+    registerSubmitBtn.classList.remove("bg-tertiary", "text-on-tertiary", "pointer-events-none", "opacity-90");
+    registerSubmitBtn.classList.add("bg-primary");
+    renderPendingPreview(); // 라벨을 되돌리고, 그사이 추가된 파일이 없으면 패널을 다시 숨긴다
+  }, 2200);
+});
+
 galleryInput.addEventListener("change", (e) => {
-  handleFiles(e.target.files);
+  addPendingFiles(e.target.files);
   e.target.value = "";
 });
 
@@ -1066,7 +1167,7 @@ captureConfirmBtn.addEventListener("click", () => {
   );
   canvas.toBlob((blob) => {
     if (!blob) return;
-    handleFiles([new File([blob], "screen_capture.png", { type: "image/png" })]);
+    addPendingFiles([new File([blob], `screen_capture_${Date.now()}.png`, { type: "image/png" })]);
   }, "image/png");
   captureModal.hidden = true;
   resetCropSelection();
