@@ -40,8 +40,10 @@ function showView(id) {
 // 실제 화면 전환(DOM 토글 + 화면별 초기화). URL은 이미 맞춰져 있다고 가정한다.
 function applyView(id) {
   showView(id);
-  if (id === "browse-view") render();
-  if (id === "solve-view") renderSolveSetup();
+  // 업로드 직후 새로고침 없이 들어와도 방금 등록된 문제가 보이도록,
+  // 모아보기/풀기로 들어올 때마다 Firestore에서 다시 불러온다
+  // (loadQuestions가 끝나면 지금 화면에 맞춰 알아서 다시 그려준다).
+  if (id === "browse-view" || id === "solve-view") loadQuestions();
 }
 
 // 사용자 조작(메뉴 클릭 등)으로 화면을 옮길 때는 이걸 호출한다 — 해시를 바꾸고,
