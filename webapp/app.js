@@ -848,7 +848,6 @@ solveRestartBtn.addEventListener("click", renderSolveSetup);
 const gradeInput = document.getElementById("grade-input");
 const semesterInput = document.getElementById("semester-input");
 const subjectSelect = document.getElementById("subject-select");
-const addSubjectBtn = document.getElementById("btn-add-subject");
 const btnCamera = document.getElementById("btn-camera");
 const galleryInput = document.getElementById("gallery-input");
 const registerStatusEl = document.getElementById("register-status");
@@ -896,7 +895,6 @@ function confirmAddSubject() {
   addSubjectModal.hidden = true;
 }
 
-addSubjectBtn.addEventListener("click", openAddSubjectModal);
 closeAddSubjectBtn.addEventListener("click", closeAddSubjectModal);
 cancelAddSubjectBtn.addEventListener("click", closeAddSubjectModal);
 confirmAddSubjectBtn.addEventListener("click", confirmAddSubject);
@@ -911,6 +909,35 @@ addSubjectModal.addEventListener("click", (e) => {
 });
 subjectSelect.addEventListener("change", () => {
   if (subjectSelect.value === "custom") openAddSubjectModal();
+});
+// 등록된 과목이 하나도 없으면 드롭다운엔 "+ 직접 입력 과목"뿐이라 골라도 change가
+// 안 터진다 - 이 경우 드롭다운을 누르는 순간 바로 추가 모달을 띄운다("과목 추가"
+// 버튼을 없앤 대신 드롭다운 클릭 자체가 그 역할을 한다).
+subjectSelect.addEventListener("mousedown", (e) => {
+  if (subjectSelect.options.length === 1) {
+    e.preventDefault();
+    openAddSubjectModal();
+  }
+});
+
+// 학년/학기는 기본값 없이 비워둔 채로 시작하므로, 등록 직전에 숫자로 채워졌는지 검사한다.
+function isValidGradeSemesterField(input, min, max) {
+  const value = input.value.trim();
+  const n = Number(value);
+  const valid = value !== "" && Number.isInteger(n) && n >= min && n <= max;
+  input.classList.toggle("ring-2", !valid);
+  input.classList.toggle("ring-error", !valid);
+  return valid;
+}
+
+function validateGradeSemester() {
+  const gradeValid = isValidGradeSemesterField(gradeInput, 1, 6);
+  const semesterValid = isValidGradeSemesterField(semesterInput, 1, 4);
+  return gradeValid && semesterValid;
+}
+
+[gradeInput, semesterInput].forEach((input) => {
+  input.addEventListener("input", () => input.classList.remove("ring-2", "ring-error"));
 });
 
 // 등록 화면에서 지금 골라둔 학년/학기/시험/과목을 읽는다. subject/grade/semester/
@@ -1028,6 +1055,12 @@ function addPendingFiles(fileList) {
 
 registerSubmitBtn.addEventListener("click", async () => {
   if (pendingFiles.length === 0) return;
+  if (!validateGradeSemester()) {
+    registerStatusEl.textContent = "학년/학기를 숫자로 입력해주세요.";
+    registerStatusEl.classList.add("text-error");
+    return;
+  }
+  registerStatusEl.classList.remove("text-error");
   const files = pendingFiles;
   pendingFiles = [];
   // 미리보기 목록만 비우고 패널(=버튼이 들어있는 컨테이너)은 계속 보이게 둔다 -
@@ -1051,6 +1084,23 @@ registerSubmitBtn.addEventListener("click", async () => {
 galleryInput.addEventListener("change", (e) => {
   addPendingFiles(e.target.files);
   e.target.value = "";
+});
+
+// Win+Shift+S 등으로 미리 캡처해둔 이미지를 클립보드에서 바로 붙여넣기(Ctrl+V).
+// 브라우저 화면공유 팝업 없이 원하는 영역을 바로 캡처해서 등록하고 싶을 때 쓴다.
+window.addEventListener("paste", (e) => {
+  if (document.getElementById("register-view").hidden) return;
+  const items = e.clipboardData?.items;
+  if (!items) return;
+  const imageFiles = [];
+  for (const item of items) {
+    if (!item.type.startsWith("image/")) continue;
+    const file = item.getAsFile();
+    if (file) imageFiles.push(new File([file], `clipboard_${Date.now()}.png`, { type: file.type || "image/png" }));
+  }
+  if (imageFiles.length === 0) return;
+  e.preventDefault();
+  addPendingFiles(imageFiles);
 });
 
 // --------------------------------------------------------------------------- #
@@ -1106,9 +1156,16 @@ async function startScreenCapture() {
 
 btnCamera.addEventListener("click", startScreenCapture);
 
+function clampToImage(x, y) {
+  return {
+    x: Math.min(Math.max(x, 0), captureImage.clientWidth),
+    y: Math.min(Math.max(y, 0), captureImage.clientHeight),
+  };
+}
+
 captureCropArea.addEventListener("mousedown", (e) => {
   const rect = captureImage.getBoundingClientRect();
-  cropStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  cropStart = clampToImage(e.clientX - rect.left, e.clientY - rect.top);
   captureSelection.hidden = false;
   captureSelection.style.left = `${cropStart.x}px`;
   captureSelection.style.top = `${cropStart.y}px`;
@@ -1120,8 +1177,7 @@ captureCropArea.addEventListener("mousedown", (e) => {
 captureCropArea.addEventListener("mousemove", (e) => {
   if (!cropStart) return;
   const rect = captureImage.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
+  const { x, y } = clampToImage(e.clientX - rect.left, e.clientY - rect.top);
   cropRect = {
     left: Math.min(x, cropStart.x),
     top: Math.min(y, cropStart.y),

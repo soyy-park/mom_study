@@ -257,11 +257,11 @@ tailwind.config = {
                     <label class="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-2 flex-shrink-0"><span class="w-2 h-2 rounded-full bg-primary"></span>학년 및 학기</label>
                     <div class="flex items-center gap-3 w-full sm:w-3/4">
                       <div class="flex-1 flex items-center gap-2 bg-surface-container-lowest px-3 h-12 rounded-xl shadow-sm">
-                        <input id="grade-input" type="number" inputmode="numeric" min="1" max="6" value="3" class="w-14 h-9 text-center font-body-xl text-body-xl text-primary font-bold bg-surface-container-low rounded-lg focus:outline-none focus:bg-surface-container" aria-label="학년 숫자로 입력">
+                        <input id="grade-input" type="number" inputmode="numeric" min="1" max="6" class="w-14 h-9 text-center font-body-xl text-body-xl text-primary font-bold bg-surface-container-low rounded-lg focus:outline-none focus:bg-surface-container" aria-label="학년 숫자로 입력">
                         <span class="font-body-md text-body-md text-on-surface font-semibold select-none">학년</span>
                       </div>
                       <div class="flex-1 flex items-center gap-2 bg-surface-container-lowest px-3 h-12 rounded-xl shadow-sm">
-                        <input id="semester-input" type="number" inputmode="numeric" min="1" max="4" value="2" class="w-14 h-9 text-center font-body-xl text-body-xl text-primary font-bold bg-surface-container-low rounded-lg focus:outline-none focus:bg-surface-container" aria-label="학기 숫자로 입력">
+                        <input id="semester-input" type="number" inputmode="numeric" min="1" max="4" class="w-14 h-9 text-center font-body-xl text-body-xl text-primary font-bold bg-surface-container-low rounded-lg focus:outline-none focus:bg-surface-container" aria-label="학기 숫자로 입력">
                         <span class="font-body-md text-body-md text-on-surface font-semibold select-none">학기</span>
                       </div>
                     </div>
@@ -284,21 +284,9 @@ tailwind.config = {
                       <label class="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary"></span>과목</label>
                       <div class="relative w-full sm:w-3/4">
                         <select id="subject-select" class="w-full h-12 px-4 bg-surface-container-lowest text-on-surface font-body-md text-body-md rounded-xl appearance-none shadow-sm focus:outline-none focus:bg-surface-container-low cursor-pointer">
-                          <option value="정보처리기사" selected>정보처리기사</option>
-                          <option value="현대한국소설론">현대한국소설론</option>
-                          <option value="한국어문법론">한국어문법론</option>
-                          <option value="노년학개론">노년학개론</option>
-                          <option value="custom">+ 직접 입력 과목</option>
+                          <option value="custom" selected>+ 직접 입력 과목</option>
                         </select>
                         <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant text-[20px]">arrow_drop_down</span>
-                      </div>
-                    </div>
-                    <div class="flex flex-col sm:flex-row justify-end sm:items-center pt-1">
-                      <div class="hidden sm:block flex-shrink-0 w-24"></div>
-                      <div class="w-full sm:w-3/4">
-                        <button class="w-full h-10 px-4 rounded-xl bg-surface-container-highest text-on-surface font-label-sm text-label-sm flex items-center justify-center gap-1.5 hover:bg-secondary-container hover:text-on-secondary-container transition-all active:scale-[0.98]" id="btn-add-subject" type="button">
-                          <span class="material-symbols-outlined text-[16px]">add_circle</span><span>과목 추가</span>
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -327,6 +315,7 @@ tailwind.config = {
                         <input type="file" accept="image/*" multiple id="gallery-input" hidden />
                       </label>
                     </div>
+                    <p class="font-label-sm text-label-sm text-on-surface-variant text-center pt-3">또는 <span class="font-semibold">Win + Shift + S</span>로 캡처한 뒤 이 화면에 <span class="font-semibold">Ctrl + V</span>로 바로 붙여넣을 수 있어요</p>
 
                     <div id="register-preview-panel" class="mt-4" hidden>
                       <ul id="register-preview-list" class="flex flex-col gap-2.5"></ul>
@@ -354,10 +343,10 @@ tailwind.config = {
 
   <!-- 화면 캡처 크롭 모달 (PC 전용) -->
   <div id="capture-modal" class="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4" hidden>
-    <div class="bg-surface-container-lowest rounded-2xl shadow-xl p-4 w-full max-w-3xl max-h-[90vh] flex flex-col gap-3">
+    <div class="bg-surface-container-lowest rounded-2xl shadow-xl p-4 w-[95vw] max-w-6xl h-[90vh] flex flex-col gap-3">
       <p class="font-label-md text-label-md text-on-surface-variant text-center">문제가 있는 영역을 마우스로 드래그해서 선택하세요.</p>
-      <div id="capture-crop-area" class="relative flex-1 overflow-auto bg-black rounded-xl select-none" style="cursor: crosshair;">
-        <img id="capture-image" class="max-w-none block" draggable="false" alt="" />
+      <div id="capture-crop-area" class="relative flex-1 min-h-0 flex items-center justify-center overflow-hidden bg-black rounded-xl select-none" style="cursor: crosshair;">
+        <img id="capture-image" class="max-w-full max-h-full block select-none" draggable="false" alt="" />
         <div id="capture-selection" class="absolute border-2 border-primary bg-primary/20 pointer-events-none" hidden></div>
       </div>
       <div class="flex items-center gap-3">
