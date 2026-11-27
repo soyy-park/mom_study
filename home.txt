@@ -1,0 +1,129 @@
+<!DOCTYPE html><html lang="ko" style=""><head></head><body class="bg-surface text-on-surface min-h-screen flex flex-col font-body-md text-body-md"><svg class="inline-defs-container" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"></svg><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"surface-container-highest":"#e7e2d9","on-surface-variant":"#434840","on-tertiary-fixed-variant":"#6e3900","surface-container-lowest":"#ffffff","on-primary-container":"#ddfad0","on-secondary-container":"#7a5748","inverse-surface":"#32302a","tertiary":"#844600","primary-fixed-dim":"#b2cfa7","on-tertiary-fixed":"#2f1500","inverse-on-surface":"#f6f0e7","tertiary-fixed-dim":"#ffb77d","on-primary-fixed-variant":"#354d2e","on-secondary-fixed-variant":"#5f3f31","on-error":"#ffffff","surface-variant":"#e7e2d9","on-background":"#1d1b16","on-tertiary-container":"#ffefe6","surface-container-high":"#ede7de","on-secondary-fixed":"#2d1509","surface-tint":"#4c6544","tertiary-fixed":"#ffdcc3","secondary":"#795747","on-error-container":"#93000a","outline":"#74796f","surface-dim":"#dfd9d1","on-surface":"#1d1b16","background":"#fff9ef","surface-container":"#f3ede4","outline-variant":"#c3c8bd","on-primary-fixed":"#092007","secondary-fixed-dim":"#eabdaa","tertiary-container":"#a85a00","surface-bright":"#fff9ef","error":"#ba1a1a","surface":"#fff9ef","error-container":"#ffdad6","on-tertiary":"#ffffff","inverse-primary":"#b2cfa7","surface-container-low":"#f9f3ea","primary-fixed":"#cdebc1","primary":"#435c3c","on-secondary":"#ffffff","secondary-fixed":"#ffdbcc","primary-container":"#5b7553","secondary-container":"#fed0bc","on-primary":"#ffffff"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-xs":"0.375rem","space-md":"1.25rem","margin":"1.25rem","gutter":"1.25rem","space-lg":"1.75rem","gutter-desktop":"2rem","space-sm":"0.75rem","space-xl":"2.5rem","margin-desktop":"3rem"},"fontFamily":{"body-md":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"headline-xl-mobile":["Literata"],"label-md":["Plus Jakarta Sans"],"headline-lg-mobile":["Literata"],"headline-md":["Literata"],"body-xl":["Plus Jakarta Sans"],"headline-xl":["Literata"],"headline-lg":["Literata"],"label-lg":["Plus Jakarta Sans"]},"fontSize":{"body-md":["16px",{"lineHeight":"26px","fontWeight":"400"}],"body-lg":["18px",{"lineHeight":"28px","fontWeight":"500"}],"label-sm":["13px",{"lineHeight":"18px","fontWeight":"500"}],"headline-xl-mobile":["28px",{"lineHeight":"38px","fontWeight":"700"}],"label-md":["15px",{"lineHeight":"20px","fontWeight":"600"}],"headline-lg-mobile":["22px",{"lineHeight":"32px","fontWeight":"600"}],"headline-md":["22px",{"lineHeight":"32px","fontWeight":"600"}],"body-xl":["20px",{"lineHeight":"32px","fontWeight":"500"}],"headline-xl":["36px",{"lineHeight":"48px","fontWeight":"700"}],"headline-lg":["28px",{"lineHeight":"38px","fontWeight":"600"}],"label-lg":["18px",{"lineHeight":"24px","fontWeight":"600"}]}}}};</script><header class="fixed top-0 w-full z-50 bg-surface-container-low/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-20 max-w-5xl mx-auto px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="w-11 h-11 rounded-xl bg-surface-container flex items-center justify-center text-tertiary shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><span class="material-symbols-outlined text-[26px]">table_lamp</span></div><div><div class="flex items-center gap-2"><span class="font-headline-md text-headline-md text-on-surface tracking-tight">지니야 공부하자</span></div><span class="block font-label-sm text-label-sm text-on-surface-variant font-medium">딸이 엄마에게</span></div></div><div class="flex items-center gap-space-md"><button class="w-11 h-11 rounded-xl bg-surface-container-high/60 flex items-center justify-center text-secondary hover:bg-surface-container-highest hover:text-on-surface transition-all focus:outline-none" title="학습 알림" type="button"><span class="material-symbols-outlined text-[24px]">notifications</span></button><div class="flex items-center gap-3 pl-2 border-l border-outline-variant/40"><div class="flex flex-col text-right hidden sm:flex items-end gap-1"><span class="font-label-md text-label-md text-on-surface font-semibold whitespace-nowrap leading-tight">김진희 님</span><span class="font-label-sm text-label-sm text-primary font-medium whitespace-nowrap leading-tight">사회복지과 1학년</span></div><img alt="Profile" class="w-10 h-10 rounded-full object-cover shadow-[0_1px_8px_rgba(0,0,0,0.04)] ring-2 ring-primary/20" src="https://lh3.googleusercontent.com/aida/AEtjO1VndJFXsMuFeR9galm0u0wmzHEfn3RFLMMSqxFuoBiEUe3WjA1g40bgyRX_AwbVQrkChF5lw-bZGqpv7TGJ0qnPmly7fu5myFXSSdMLxE3vjCm2MWtTzjBbkdlhOoD_TG6QNPySceSoW42-_CIByrJla_AsGcjR3QjvGDy0JXFKKHitwt-SErvjuRCdurB0qEmVh83BuncxXei9OPbKZwk2S0k6cQ2tyEME4WJpHmhdq3OuDy4koeGeRPjEJ9NRlUmwGjS0MhzwBrs"></div></div></div></header><main class="w-full pt-20 pb-28 flex-1 bg-surface"><div class="max-w-5xl mx-auto px-gutter h-full"><div class="flex flex-col w-full">
+<!-- Desk Ambience Background Container -->
+<div class="relative w-full max-w-4xl mx-auto px-space-xs sm:px-space-md py-space-sm sm:py-space-md">
+<!-- Tactile Clipboard Mount Container -->
+<div class="relative bg-surface-container rounded-3xl shadow-2xl pb-9 px-4 sm:px-9 overflow-hidden border border-[#d8cfbe] pt-7">
+<!-- Multi-layer stacked paper effect underneath (tactile stacked notes) -->
+<div class="absolute -bottom-1.5 right-6 sm:right-12 left-6 sm:left-12 h-4 bg-[#ece5d9] rounded-b-2xl border-b border-r border-[#d4cbba] shadow-sm pointer-events-none -z-0"></div>
+<div class="absolute -bottom-3 right-8 sm:right-16 left-8 sm:left-16 h-4 bg-[#e3dcce] rounded-b-xl border-b border-r border-[#c7bda9] shadow-xs pointer-events-none -z-0"></div>
+<!-- Faux Brass Metal Clamp Ornament with Hanging Ribbon Bookmark -->
+
+<!-- Authentic Spiral Wire Ring Holes along Left Edge -->
+<div class="hidden sm:flex absolute top-5 bottom-5 w-12 pointer-events-none z-30 select-none flex-col justify-between items-start left-4 sm:left-6"><svg class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 52 520"><defs><linearGradient id="silver-wire-base" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#78828f"></stop><stop offset="25%" stop-color="#cbd5e1"></stop><stop offset="48%" stop-color="#f1f5f9"></stop><stop offset="70%" stop-color="#94a3b8"></stop><stop offset="100%" stop-color="#475569"></stop></linearGradient><linearGradient id="silver-wire-specular" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"></stop><stop offset="45%" stop-color="#ffffff" stop-opacity="0.8"></stop><stop offset="80%" stop-color="#cbd5e1" stop-opacity="0.2"></stop><stop offset="100%" stop-color="#64748b" stop-opacity="0"></stop></linearGradient><linearGradient id="silver-wire-back" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#334155"></stop><stop offset="50%" stop-color="#64748b"></stop><stop offset="100%" stop-color="#1e293b"></stop></linearGradient><radialGradient id="punch-hole-shade" cx="40%" cy="40%" r="60%"><stop offset="0%" stop-color="#1e232a"></stop><stop offset="65%" stop-color="#333d4b"></stop><stop offset="88%" stop-color="#525e6f"></stop><stop offset="100%" stop-color="#c2cbdb"></stop></radialGradient><filter id="paper-contact-shadow" x="-30%" y="-30%" width="170%" height="170%"><feDropShadow dx="0.8" dy="1.2" stdDeviation="1" flood-color="#2e2417" flood-opacity="0.2"></feDropShadow></filter><g id="spiral-ring-unit"><circle cx="30" cy="14" r="4.6" fill="#e2dcd1"></circle><circle cx="30" cy="14" r="3.8" fill="url(#punch-hole-shade)"></circle><path d="M 6 15.5 C 10 18, 21 18, 30 14.5" fill="none" stroke="url(#silver-wire-back)" stroke-width="2.2" stroke-linecap="round" opacity="0.7"></path><g filter="url(#paper-contact-shadow)"><path d="M 30.5 13.6 C 26 4.8, 12 3, 7 8.8 C 2.8 13.5, 5.5 18.5, 11 20.2" fill="none" stroke="url(#silver-wire-base)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path><path d="M 30 13 C 25.5 4.5, 12.5 3, 7.8 8 C 4 12, 6.5 16.8, 10.8 19" fill="none" stroke="url(#silver-wire-specular)" stroke-width="0.8" stroke-linecap="round"></path></g><path d="M 32 10.5 C 33.8 12.2, 33.8 15.8, 32 17.5" fill="none" stroke="#fff9ef" stroke-width="1.8" opacity="0.95"></path></g></defs><g transform="translate(0, 5)"><use href="#spiral-ring-unit"></use></g><g transform="translate(0, 31)"><use href="#spiral-ring-unit"></use></g><g transform="translate(0, 57)"><use href="#spiral-ring-unit"></use></g><g transform="translate(0, 83)"><use href="#spiral-ring-unit"></use></g><g transform="translate(0, 109)"><use href="#spiral-ring-unit"></use></g><g transform="translate(0, 135)"><use href="#spiral-ring-unit"></use></g><g transform="translate(0, 161)"><use href="#spiral-ring-unit"></use></g><g transform="translate(0, 187)"><use href="#spiral-ring-unit"></use></g><g transform="translate(0, 213)"><use href="#spiral-ring-unit"></use></g><g transform="translate(0, 239)"><use href="#spiral-ring-unit"></use></g><g transform="translate(0, 265)"><use href="#spiral-ring-unit"></use></g><g transform="translate(0, 291)"><use href="#spiral-ring-unit"></use></g><g transform="translate(0, 317)"><use href="#spiral-ring-unit"></use></g><g transform="translate(0, 343)"><use href="#spiral-ring-unit"></use></g><g transform="translate(0, 369)"><use href="#spiral-ring-unit"></use></g><g transform="translate(0, 395)"><use href="#spiral-ring-unit"></use></g><g transform="translate(0, 421)"><use href="#spiral-ring-unit"></use></g><g transform="translate(0, 447)"><use href="#spiral-ring-unit"></use></g><g transform="translate(0, 473)"><use href="#spiral-ring-unit"></use></g><g transform="translate(0, 499)"><use href="#spiral-ring-unit"></use></g></svg></div>
+<!-- Main Parchment Paper Sheet with Lined Ruling & Left Margin Rule -->
+<div class="relative bg-surface-container-lowest rounded-2xl p-6 sm:p-9 shadow-md overflow-hidden sm:mr-1 border border-[#e8e1d5] sm:pl-16" style="background-image: linear-gradient(transparent 31px, rgba(91, 117, 83, 0.08) 32px); background-size: 100% 32px;">
+<!-- Traditional College Ruled Vertical Red/Terracotta Margin Line -->
+<div class="hidden sm:block absolute top-0 bottom-0 w-[1.5px] bg-[#d9826c]/30 pointer-events-none z-0 sm:left-16"></div>
+<div class="hidden sm:block absolute top-0 bottom-0 w-[0.5px] bg-[#d9826c]/15 pointer-events-none z-0 sm:left-16"></div>
+<!-- Subtle Corner Curl Shadow / Fold Accent on Bottom-Right -->
+<div class="absolute -bottom-8 -right-8 w-16 h-16 bg-gradient-to-tl from-[#e0d6c5] via-[#f7f2ea] to-transparent pointer-events-none rounded-tl-xl shadow-xs opacity-80"></div>
+<!-- Warm Incandescent Ambient Desk Glow (Corner Accent) -->
+<div class="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-gradient-to-bl from-tertiary-fixed/35 via-tertiary-fixed/10 to-transparent pointer-events-none blur-2xl"></div>
+<!-- Greeting Header & Encouragement -->
+<div class="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-7 pl-0 z-10 sm:px-9">
+<div class="space-y-2">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight leading-snug">
+        안녕하세요, 지니님!<br>
+<span class="text-secondary font-bold">오늘은 어떤 공부</span>를 할까요?
+      </h1>
+<p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">auto_stories</span>
+<span class="">캡처하고, 공부하고, A+ 받자!</span>
+</p>
+</div>
+</div>
+<!-- Core 3 Action Stationery Cards Grid - Tactile Sticky Notes with Washi Tape -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-5 py-4 pl-0 relative z-10 sm:px-9"><!-- Card 1: 등록 (Soft Pastel Mint Sticky Note) -->
+<a class="group relative flex flex-col items-center justify-between text-center rounded-xl border border-[#cfe2c8] transition-all duration-300 min-h-[225px] hover:scale-[1.02] hover:z-20 px-4 py-6" data-path="quiz-compose" href="#" style="background-color: rgb(236, 245, 232); transform: rotate(-1.5deg); box-shadow: rgba(60, 45, 20, 0.14) 0px 10px 22px -6px, rgba(60, 45, 20, 0.07) 0px 4px 6px -2px;">
+<!-- Translucent Washi Tape at Top -->
+<div class="absolute -top-3 left-1/2 -translate-x-1/2 w-20 h-5 shadow-xs pointer-events-none z-20 rotate-[1deg]" style="background: rgba(182, 212, 172, 0.75); backdrop-filter: blur(2px); border-left: 2px dashed rgba(67, 92, 60, 0.28); border-right: 2px dashed rgba(67, 92, 60, 0.28); box-shadow: 0 1px 3px rgba(0,0,0,0.08);"></div>
+<!-- Post-it Top Adhesive Strip line subtle effect -->
+<div class="absolute top-0 left-0 right-0 h-4 rounded-t-xl bg-black/[0.02] pointer-events-none"></div>
+
+<div class="flex flex-col items-center gap-3 my-1.5">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-lowest shadow-sm flex items-center justify-center text-primary border border-[#d6ebd0] group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[36px]">photo_camera</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold">등록</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1 font-medium whitespace-nowrap">새로운 퀴즈를 등록해요</p>
+</div>
+</div>
+<div class="w-full pt-3 flex items-center justify-center gap-1.5 text-primary font-label-md text-label-md font-semibold">
+<span class="">캡처 또는 촬영</span>
+<span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</a>
+<!-- Card 2: 퀴즈 풀기 (Soft Pastel Apricot / Peach Sticky Note) -->
+<a class="group relative flex flex-col items-center justify-between text-center p-6 rounded-xl border border-[#fbd4c2] transition-all duration-300 min-h-[225px] hover:scale-[1.02] hover:z-20" data-path="quiz-study-session" href="#" style="background-color: rgb(255, 240, 230); transform: rotate(0.8deg); box-shadow: rgba(60, 45, 20, 0.14) 0px 10px 22px -6px, rgba(60, 45, 20, 0.07) 0px 4px 6px -2px;">
+<!-- Translucent Peach Washi Tape at Top -->
+<div class="absolute -top-3 left-1/2 -translate-x-1/2 w-20 h-5 shadow-xs pointer-events-none z-20 rotate-[-1.5deg]" style="background: rgba(254, 204, 180, 0.8); backdrop-filter: blur(2px); border-left: 2px dashed rgba(121, 87, 71, 0.3); border-right: 2px dashed rgba(121, 87, 71, 0.3); box-shadow: 0 1px 3px rgba(0,0,0,0.08);"></div>
+<!-- Post-it Top Adhesive Strip line subtle effect -->
+<div class="absolute top-0 left-0 right-0 h-4 rounded-t-xl bg-black/[0.02] pointer-events-none"></div>
+
+<div class="flex flex-col items-center gap-3 my-1.5">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-lowest shadow-sm flex items-center justify-center text-secondary border border-[#fbd9cb] group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[36px]">edit_note</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold">퀴즈 풀기</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1 font-medium whitespace-nowrap">실력을 점검해요</p>
+</div>
+</div>
+<div class="w-full pt-3 flex items-center justify-center gap-1.5 text-secondary font-label-md text-label-md font-semibold">
+<span class="">모의고사 시작</span>
+<span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</a>
+<!-- Card 3: 모아보기 (Warm Classic Canary Yellow Sticky Note) -->
+<a class="group relative flex flex-col items-center justify-between text-center rounded-xl border border-[#fae8a8] transition-all duration-300 min-h-[225px] hover:scale-[1.02] hover:z-20 px-4 py-6" data-path="review-notebook" href="#" style="background-color: rgb(254, 249, 217); transform: rotate(1.2deg); box-shadow: rgba(60, 45, 20, 0.14) 0px 10px 22px -6px, rgba(60, 45, 20, 0.07) 0px 4px 6px -2px;">
+<!-- Translucent Pale Yellow Washi Tape at Top -->
+<div class="absolute -top-3 left-1/2 -translate-x-1/2 w-20 h-5 shadow-xs pointer-events-none z-20 rotate-[1deg]" style="background: rgba(250, 230, 150, 0.85); backdrop-filter: blur(2px); border-left: 2px dashed rgba(132, 70, 0, 0.28); border-right: 2px dashed rgba(132, 70, 0, 0.28); box-shadow: 0 1px 3px rgba(0,0,0,0.08);"></div>
+<!-- Post-it Top Adhesive Strip line subtle effect -->
+<div class="absolute top-0 left-0 right-0 h-4 rounded-t-xl bg-black/[0.02] pointer-events-none"></div>
+
+<div class="flex flex-col items-center gap-3 my-1.5">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-lowest shadow-sm flex items-center justify-center text-tertiary border border-[#eee4d2] group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[36px]">menu_book</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold">모아보기</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1 font-medium whitespace-nowrap">등록된 퀴즈를 살펴봐요</p>
+</div>
+</div>
+<div class="w-full pt-3 flex items-center justify-center gap-1.5 text-tertiary font-label-md text-label-md font-semibold">
+<span class="">누적 48문제 보관</span>
+<span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</a></div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Micro-interactions for tactile cards
+  document.querySelectorAll('a[data-path]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const path = btn.getAttribute('data-path');
+      console.log('Navigating to desk section:', path);
+    });
+  });
+</script></div></main>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body></html>
